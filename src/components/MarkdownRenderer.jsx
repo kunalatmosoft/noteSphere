@@ -13,10 +13,9 @@ export default function MarkdownRenderer({ content, id }) {
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
+          // 1. Existing code highlighter
           code({ node, inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
-            
-            // If it's a code block (not inline), render the SyntaxHighlighter
             return !inline && match ? (
               <SyntaxHighlighter
                 style={vscDarkPlus}
@@ -27,12 +26,17 @@ export default function MarkdownRenderer({ content, id }) {
                 {String(children).replace(/\n$/, '')}
               </SyntaxHighlighter>
             ) : (
-              // If it's inline code, render a standard <code> tag
-              <code className={className} {...props}>
-                {children}
-              </code>
+              <code className={className} {...props}>{children}</code>
             );
           },
+          // 2. New wrapper for tables
+          table({ children }) {
+            return (
+              <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
+                <table>{children}</table>
+              </div>
+            );
+          }
         }}
       >
         {content || ''}
