@@ -10,6 +10,8 @@ import PostView from './pages/PostView.jsx'
 import Profile from './pages/Profile.jsx'
 import Search from './pages/Search.jsx'
 import Trending from './pages/Trending.jsx'
+import CommunityPage from './pages/CommunityPage.jsx'
+import PostDetailsPage from './pages/PostDetailsPage.jsx'
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth()
@@ -22,6 +24,7 @@ export default function App() {
     <div className="min-h-screen bg-base-950 text-base-100 font-sans">
       <Navbar />
       <Routes>
+        {/* Existing Application Routes */}
         <Route path="/" element={<PublicFeed />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -29,6 +32,8 @@ export default function App() {
         <Route path="/trending" element={<Trending />} />
         <Route path="/post/:postId" element={<PostView />} />
         <Route path="/u/:username" element={<Profile />} />
+        
+        {/* Protected Dashboard */}
         <Route
           path="/notes/*"
           element={
@@ -37,6 +42,20 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* ========================================= */}
+        {/* NEW: Reddit-like Application Routes       */}
+        {/* ========================================= */}
+        
+        {/* Global Reddit Feed */}
+        <Route path="/r" element={<CommunityPage />} />
+        
+        {/* Specific Community Feed */}
+        <Route path="/r/:communityId" element={<CommunityPage />} />
+        
+        {/* Single Reddit Post View */}
+        <Route path="/r/post/:postId" element={<PostDetailsPage />} />
+        
       </Routes>
     </div>
   )

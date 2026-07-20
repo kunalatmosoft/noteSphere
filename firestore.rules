@@ -2,9 +2,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper function used across rules
     function isSignedIn() {
       return request.auth != null;
     }
+
+    // ==========================================
+    // EXISTING APP RULES (Untouched)
+    // ==========================================
 
     // users/{uid} — public profile, only owner can write
     match /users/{uid} {
@@ -42,5 +47,41 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if false;
     }
+
+    // ==========================================
+    // NEW REDDIT APP RULES
+    // ==========================================
+
+    // communities/{communityId} — subreddits
+    match /communities/{communityId} {
+      allow read: if true;
+      // Allow signed in users to create communities and update member lists
+      allow write: if isSignedIn();
+    }
+
+    // reddit_posts/{postId} — posts inside communities
+    match /reddit_posts/{postId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        resource.data.authorId == request.auth.uid ||
+        // allow any signed-in user to upvote/downvote and increment comment counts
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score', 'upvotes', 'downvotes', 'commentCount'])
+      );
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
+
+    // comments/{commentId} — nested comments on reddit posts
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        resource.data.authorId == request.auth.uid ||
+        // allow any signed-in user to upvote/downvote comments
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['score', 'upvotes', 'downvotes'])
+      );
+      allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+    }
+    
   }
 }
