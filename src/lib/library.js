@@ -14,9 +14,10 @@ export const createLibrary = async (uid, name) => {
     uid,
     name,
     createdAt: serverTimestamp(),
-    postCount: 0
+    postCount: 0,
+    isPublic: false // default to private
   });
-  return { id: libRef.id, name, uid, postCount: 0 };
+  return { id: libRef.id, name, uid, postCount: 0, isPublic: false};
 };
 
 // Fetch posts saved inside a specific custom library
@@ -50,4 +51,17 @@ export const deleteLibrary = async (libraryId) => {
 export const removePostFromLibrary = async (libraryId, postId) => {
   const postRef = doc(db, `libraries/${libraryId}/posts`, postId);
   await deleteDoc(postRef);
+};
+
+// Toggle public/private visibility
+export const toggleLibraryVisibility = async (libraryId, isPublic) => {
+  const libRef = doc(db, 'libraries', libraryId);
+  await updateDoc(libRef, { isPublic });
+};
+
+// Fetch all public libraries
+export const getPublicLibraries = async () => {
+  const q = query(collection(db, 'libraries'), where('isPublic', '==', true));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };

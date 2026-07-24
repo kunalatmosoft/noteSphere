@@ -6,23 +6,25 @@ import {
     getLibraryPosts, 
     updateLibraryName, 
     deleteLibrary, 
-    removePostFromLibrary 
+    removePostFromLibrary,
+    toggleLibraryVisibility,
+    getPublicLibraries // Ensure this is exported from your lib/library.js
 } from '../lib/library.js';
 import PostCard from '../components/PostCard.jsx';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Library, Plus, Globe, Trash2, Edit2, X, Check, Search } from 'lucide-react';
+import { TrendingUp, Library, Plus, Globe, Trash2, Edit2, X, Check, Search, Lock, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 export default function CustomizedDashboard() {
     const { profile } = useAuth();
 
-    // View State: 'public', 'trending', or a specific library ID
     const [activeSection, setActiveSection] = useState('public');
 
     // Data States
     const [posts, setPosts] = useState([]);
     const [trending, setTrending] = useState([]);
     const [userLibraries, setUserLibraries] = useState([]);
+    const [publicLibraries, setPublicLibraries] = useState([]);
 
     // UI States
     const [loading, setLoading] = useState(true);
@@ -34,17 +36,19 @@ export default function CustomizedDashboard() {
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState('');
 
-    // Initial Load: Global data & User libraries
+    // Initial Load: Global data & User/Public libraries
     useEffect(() => {
         const initializeDashboard = async () => {
             setLoading(true);
-            const [trendData, feedData] = await Promise.all([
+            const [trendData, feedData, pubLibs] = await Promise.all([
                 getTrending(),
-                getFeed({ sort: 'recent' })
+                getFeed({ sort: 'recent' }),
+                getPublicLibraries()
             ]);
 
             setTrending(trendData);
             setPosts(feedData);
+            setPublicLibraries(pubLibs);
 
             if (profile?.uid) {
                 const libs = await getUserLibraries(profile.uid);
@@ -88,11 +92,11 @@ export default function CustomizedDashboard() {
         setUserLibraries([...userLibraries, newLib]);
         setNewLibName('');
         setIsCreatingLib(false);
-        setActiveSection(newLib.id); // Switch to the new empty library
+        setActiveSection(newLib.id); 
     };
 
     const handleRenameLibrary = async () => {
-        if (!editName.trim() || editName === getActiveLibrary()?.name) {
+        if (!editName.trim() || editName === activeLibInfo?.name) {
             setIsEditing(false);
             return;
         }
@@ -112,17 +116,31 @@ export default function CustomizedDashboard() {
     };
 
     const handleRemovePost = async (postId) => {
-        // Optimistic UI update: remove it from the screen immediately
+        // Optimistic UI update
         setPosts(posts.filter(p => p.id !== postId));
-        // Perform backend deletion
         await removePostFromLibrary(activeSection, postId);
     };
 
-    // Helper functions
-    const getActiveLibrary = () => userLibraries.find(l => l.id === activeSection);
-    const isCustomLibrary = activeSection !== 'public' && activeSection !== 'trending';
+    const handleToggleVisibility = async () => {
+        if (!activeLibInfo) return;
+        const newStatus = !activeLibInfo.isPublic;
+        
+        // Optimistic UI Update
+        setUserLibraries(userLibraries.map(lib => 
+            lib.id === activeSection ? { ...lib, isPublic: newStatus } : lib
+        ));
+        
+        await toggleLibraryVisibility(activeSection, newStatus);
+    };
 
-    // Derived State: Filtered Posts based on search query
+    // --- OWNERSHIP CHECKS ---
+    const activeLibInfo = userLibraries.find(l => l.id === activeSection) || publicLibraries.find(l => l.id === activeSection);
+    const isCustomLibrary = activeSection !== 'public' && activeSection !== 'trending';
+    const isOwner = isCustomLibrary && activeLibInfo?.uid === profile?.uid;
+
+    const communityLibraries = publicLibraries.filter(lib => lib.uid !== profile?.uid);
+
+    // Derived State: Filtered Posts
     const filteredPosts = posts.filter(post => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
@@ -154,6 +172,24 @@ export default function CustomizedDashboard() {
                     </button>
                 </div>
 
+                {communityLibraries.length > 0 && (
+                    <div className="space-y-2 pt-4 border-t border-base-800">
+                        <h2 className="text-sm font-bold text-base-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Users size={16} /> Community Libraries
+                        </h2>
+                        {communityLibraries.map(lib => (
+                            <button
+                                key={lib.id}
+                                onClick={() => setActiveSection(lib.id)}
+                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === lib.id ? 'bg-base-800 text-white' : 'text-base-300 hover:bg-base-900'}`}
+                            >
+                                <Library size={18} className="flex-shrink-0 text-accent-500/70" />
+                                <span className="truncate">{lib.name}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 {profile && (
                     <div className="space-y-2 pt-4 border-t border-base-800">
                         <h2 className="text-sm font-bold text-base-400 uppercase tracking-wider mb-3 flex items-center justify-between">
@@ -178,10 +214,13 @@ export default function CustomizedDashboard() {
                             <button
                                 key={lib.id}
                                 onClick={() => setActiveSection(lib.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === lib.id ? 'bg-base-800 text-white' : 'text-base-300 hover:bg-base-900'}`}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === lib.id ? 'bg-base-800 text-white' : 'text-base-300 hover:bg-base-900'}`}
                             >
-                                <Library size={18} className="flex-shrink-0" />
-                                <span className="truncate">{lib.name}</span>
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <Library size={18} className="flex-shrink-0" />
+                                    <span className="truncate">{lib.name}</span>
+                                </div>
+                                {lib.isPublic && <Globe size={12} className="text-accent-500 flex-shrink-0" />}
                             </button>
                         ))}
                     </div>
@@ -193,7 +232,7 @@ export default function CustomizedDashboard() {
                 <div className="flex items-center justify-between mb-4 min-h-[40px]">
                     
                     {/* EDIT MODE UI */}
-                    {isEditing && isCustomLibrary ? (
+                    {isEditing && isOwner ? (
                         <div className="flex items-center gap-2 w-full max-w-md">
                             <input 
                                 autoFocus type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
@@ -209,24 +248,45 @@ export default function CustomizedDashboard() {
                         </div>
                     ) : (
                         // NORMAL HEADER UI
-                        <h1 className="text-2xl font-bold capitalize flex items-center gap-3 group">
-                            {isCustomLibrary ? getActiveLibrary()?.name : (activeSection === 'public' ? 'Global Feed' : 'Trending Posts')}
-                            
-                            {/* Inline Edit Button */}
-                            {isCustomLibrary && (
-                                <button 
-                                    onClick={() => { setEditName(getActiveLibrary()?.name); setIsEditing(true); }}
-                                    className="opacity-0 group-hover:opacity-100 text-base-400 hover:text-accent-500 transition-opacity p-1"
-                                    title="Rename Library"
+                        <div className="flex items-center gap-4">
+                            <h1 className="text-2xl font-bold capitalize flex items-center gap-3 group">
+                                {isCustomLibrary ? activeLibInfo?.name : (activeSection === 'public' ? 'Global Feed' : 'Trending Posts')}
+                                
+                                {/* ONLY owners can rename */}
+                                {isOwner && (
+                                    <button 
+                                        onClick={() => { setEditName(activeLibInfo?.name); setIsEditing(true); }}
+                                        className="opacity-0 group-hover:opacity-100 text-base-400 hover:text-accent-500 transition-opacity p-1"
+                                        title="Rename Library"
+                                    >
+                                        <Edit2 size={16} />
+                                    </button>
+                                )}
+                            </h1>
+
+                            {/* ONLY owners can toggle visibility */}
+                            {isOwner && !isEditing && (
+                                <button
+                                    onClick={handleToggleVisibility}
+                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-colors border ${
+                                        activeLibInfo?.isPublic 
+                                        ? 'bg-accent-500/10 text-accent-500 border-accent-500/30 hover:bg-accent-500/20' 
+                                        : 'bg-base-800 text-base-400 border-base-700 hover:bg-base-700 hover:text-white'
+                                    }`}
+                                    title={activeLibInfo?.isPublic ? "Make Private" : "Make Public"}
                                 >
-                                    <Edit2 size={16} />
+                                    {activeLibInfo?.isPublic ? (
+                                        <><Globe size={14} /> Public</>
+                                    ) : (
+                                        <><Lock size={14} /> Private</>
+                                    )}
                                 </button>
                             )}
-                        </h1>
+                        </div>
                     )}
 
-                    {/* Delete Library Button */}
-                    {isCustomLibrary && !isEditing && (
+                    {/* ONLY owners can delete */}
+                    {isOwner && !isEditing && (
                         <button 
                             onClick={handleDeleteLibrary} 
                             className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
@@ -262,7 +322,7 @@ export default function CustomizedDashboard() {
                 ) : posts.length === 0 ? (
                     <div className="text-center py-12 bg-base-900/50 rounded-xl border border-base-800 mt-6">
                         <p className="text-base-400 mb-2">Nothing to see here yet.</p>
-                        {isCustomLibrary && (
+                        {isOwner && (
                             <p className="text-sm text-base-500">Click "Save to Library" on any post to add it here.</p>
                         )}
                     </div>
@@ -283,7 +343,7 @@ export default function CustomizedDashboard() {
                                 key={p.id} 
                                 post={p} 
                                 userLibraries={userLibraries} 
-                                activeLibraryId={isCustomLibrary ? activeSection : null}
+                                activeLibraryId={isOwner ? activeSection : null}
                                 onRemove={handleRemovePost}
                             />
                         ))}
