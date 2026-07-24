@@ -3,10 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
     <title>Notesphere — Notes & Blogs</title>
+    <meta name="title" content="Notesphere — Notes & Blogs" />
+    <meta name="description" content="Discover insightful notes, articles, and blogs on Notesphere. Your ultimate destination for reading and sharing knowledge." />
+    <!-- Replace with your actual dark background hex code to tint mobile browser UI -->
+    <meta name="theme-color" content="#020617" /> 
+
+    <!-- Open Graph / Facebook (Controls how links look when shared on social media) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://notespher.netlify.app/" />
+    <meta property="og:title" content="Notesphere — Notes & Blogs" />
+    <meta property="og:description" content="Discover insightful notes, articles, and blogs on Notesphere." />
+    <!-- Create a 1200x630 image named og-image.jpg and put it in your public folder -->
+    <meta property="og:image" content="/og-image.jpg" /> 
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://notespher.netlify.app/" />
+    <meta property="twitter:title" content="Notesphere — Notes & Blogs" />
+    <meta property="twitter:description" content="Discover insightful notes, articles, and blogs on Notesphere." />
+    <meta property="twitter:image" content="/og-image.jpg" />
+
+    <!-- Favicons & Icons -->
+    <!-- Note: Removed '/public' from the path. Vite serves everything inside the public folder directly from the root (/). -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Font Optimization -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <!-- Added gstatic preconnect with 'crossorigin' which is required for Google Fonts to cache properly -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- Third-Party Styles -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   </head>
   <body class="bg-base-950 text-base-100">
     <div id="root"></div>
