@@ -83,5 +83,23 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
     
+    // ==========================================
+    // CUSTOM LIBRARIES RULES
+    // ==========================================
+    
+    match /libraries/{libraryId} {
+      // Allow creation only if the user sets their own UID
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      
+      // Allow read/update/delete only if the library belongs to the requester
+      allow read, update, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+
+      // Nested rules for posts saved inside a specific library
+      match /posts/{savedPostId} {
+        // Must be signed in AND own the parent library document
+        allow read, write: if isSignedIn() && get(/databases/$(database)/documents/libraries/$(libraryId)).data.uid == request.auth.uid;
+      }
+    }
+
   }
 }

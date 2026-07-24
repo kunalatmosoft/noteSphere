@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
-import { Earth , Search, TrendingUp, Podcast, LogOut, User, Menu, X } from 'lucide-react'
+import { Earth , Search, TrendingUp, Podcast, LogOut, User, Menu, X, Library } from 'lucide-react'
 
 export default function Navbar() {
   const { user, profile, logout } = useAuth()
@@ -41,9 +41,13 @@ export default function Navbar() {
           <Link to="/trending" className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/20 text-base-600 hover:text-base-950 dark:text-gray-900 dark:hover:text-white transition-all duration-300 active:scale-95" title="Trending">
             <TrendingUp size={16} />
           </Link>
+          <Link to="/library" className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/20 text-base-600 hover:text-base-950 dark:text-gray-900 dark:hover:text-white transition-all duration-300 active:scale-95" title="Trending">
+            <Library size={16} />
+          </Link>
           <Link to="/r" className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/20 text-base-600 hover:text-base-950 dark:text-gray-900 dark:hover:text-white transition-all duration-300 active:scale-95" title="Communities">
             <Podcast size={16} />
           </Link>
+          
 
           <div className="w-px h-4 bg-black/10 dark:bg-white/20 mx-1 sm:mx-1.5" /> 
 
@@ -111,6 +115,9 @@ export default function Navbar() {
           
           <Link to="/search" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-base-800 dark:text-gray-200 font-medium transition-colors">
             <Search size={18} /> Search
+          </Link>
+          <Link to="/library" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-base-800 dark:text-gray-200 font-medium transition-colors">
+            <Library size={18} /> Library
           </Link>
           <Link to="/trending" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-base-800 dark:text-gray-200 font-medium transition-colors">
             <TrendingUp size={18} /> Trending
