@@ -1,5 +1,6 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAnalytics } from './hooks/useAnalytics.js'
 import { useAuth } from './context/AuthContext.jsx'
 import Navbar from './components/Navbar.jsx'
 import Login from './pages/Login.jsx'
@@ -10,17 +11,21 @@ import PostView from './pages/PostView.jsx'
 import Profile from './pages/Profile.jsx'
 import Search from './pages/Search.jsx'
 import Trending from './pages/Trending.jsx'
-import Library from './pages/library.jsx'
+import Library from './pages/Library.jsx'
 import CommunityPage from './pages/CommunityPage.jsx'
 import PostDetailsPage from './pages/PostDetailsPage.jsx'
 
 function ProtectedRoute({ children }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+  
+  if (loading) return <div>Loading...</div> // Wait for auth check to finish
   if (!user) return <Navigate to="/login" replace />
+  
   return children
 }
 
 export default function App() {
+  useAnalytics()
   return (
     <div className="min-h-screen bg-base-950 text-base-100 font-sans">
       <Navbar />
