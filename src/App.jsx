@@ -11,7 +11,7 @@ import PostView from './pages/PostView.jsx'
 import Profile from './pages/Profile.jsx'
 import Search from './pages/Search.jsx'
 import Trending from './pages/Trending.jsx'
-import Library from './pages/Library.jsx'
+import Library from './pages/library.jsx'
 import CommunityPage from './pages/CommunityPage.jsx'
 import PostDetailsPage from './pages/PostDetailsPage.jsx'
 
@@ -36,7 +36,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/search" element={<Search />} />
         <Route path="/trending" element={<Trending />} />
-        <Route path="/Library" element={<Library />} />
+        <Route path="/library" element={<Library />} />
         <Route path="/post/:postId" element={<PostView />} />
         <Route path="/u/:username" element={<Profile />} />
         
