@@ -36,7 +36,7 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/search" element={<Search />} />
         <Route path="/trending" element={<Trending />} />
-        <Route path="/library" element={<Library />} />
+        <Route path="/Library" element={<Library />} />
         <Route path="/post/:postId" element={<PostView />} />
         <Route path="/u/:username" element={<Profile />} />
         
