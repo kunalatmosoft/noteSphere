@@ -5,12 +5,9 @@ import FileTree from '../components/FileTree.jsx'
 import NoteEditor from '../components/NoteEditor.jsx'
 import { 
   FileText, 
-  Database, 
-  SquareTerminal, 
-  Bot, 
-  Book, 
-  Settings, 
-  PanelLeft 
+  PanelLeft,
+  Plus,
+  ListCollapse 
 } from 'lucide-react'
 
 export default function Dashboard() {
@@ -20,10 +17,11 @@ export default function Dashboard() {
   const [activeNode, setActiveNode] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Sidebar Layout State
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(260)
   const [isDragging, setIsDragging] = useState(false)
+  const [collapseTrigger, setCollapseTrigger] = useState(0)
+  
   const containerRef = useRef(null)
 
   const refresh = useCallback(async () => {
@@ -38,39 +36,45 @@ export default function Dashboard() {
 
   useEffect(() => { refresh() }, [user.uid, refresh])
 
-  // Drag-to-resize logic
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMove = (clientX) => {
       if (!isDragging || !containerRef.current) return
-      
       const containerRect = containerRef.current.getBoundingClientRect()
-      // Calculate width relative to the inner container (excluding the 64px nav rail)
-      let newWidth = e.clientX - containerRect.left - 64 
       
-      // Constrain sidebar width (min 150px, max 500px)
-      newWidth = Math.max(150, Math.min(500, newWidth))
+      let newWidth = clientX - containerRect.left
+      newWidth = Math.max(180, Math.min(450, newWidth))
       setSidebarWidth(newWidth)
     }
 
-    const handleMouseUp = () => {
+    const handleMouseMove = (e) => handleMove(e.clientX)
+    const handleTouchMove = (e) => handleMove(e.touches[0].clientX)
+
+    const handleUp = () => {
       setIsDragging(false)
       document.body.style.userSelect = '' 
+      document.body.style.touchAction = '' 
     }
 
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener('touchmove', handleTouchMove, { passive: false })
+      document.addEventListener('mouseup', handleUp)
+      document.addEventListener('touchend', handleUp)
+      
       document.body.style.userSelect = 'none' 
+      document.body.style.touchAction = 'none' 
     }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('mouseup', handleUp)
+      document.removeEventListener('touchend', handleUp)
     }
   }, [isDragging])
 
   async function handleCreate(parentId, type) {
-    const name = window.prompt(type === 'folder' ? 'Folder name' : 'File name (e.g. My Note.md)', type === 'folder' ? 'New Folder' : 'Untitled.md')
+    const name = window.prompt(type === 'folder' ? 'Folder name' : 'File name', type === 'folder' ? 'New Folder' : 'Untitled')
     if (!name) return
     const id = await createNode({ ownerId: user.uid, parentId, type, name })
     await refresh()
@@ -92,78 +96,108 @@ export default function Dashboard() {
     setActiveNode(node)
   }
 
-  const tree = buildTree(nodes)
+  const tree = buildTree(nodes) || []
+  const toggleSidebar = () => setIsSidebarOpen(prev => !prev)
 
   return (
     <div 
       ref={containerRef}
-      className="max-w-7xl mx-auto flex relative bg-base-950 overflow-hidden" 
-      style={{ height: 'calc(100vh - 57px)' }}
+      // CRITICAL FIX: Changed min-h to a strict h-[calc...] to prevent the whole page from scrolling
+      className="w-full h-[calc(100vh-57px)] flex relative bg-[#0e0e0e] overflow-hidden" 
     >
-
-      {/* 2. Sliding FileTree Sidebar */}
+      {/* Sliding FileTree Sidebar */}
       <aside 
         style={{ width: isSidebarOpen ? `${sidebarWidth}px` : '0px' }} 
-        className="flex-shrink-0 bg-base-950 border-r border-base-900 transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] relative overflow-hidden"
+        className={`flex-shrink-0 h-full bg-[#121212] border-r border-base-800/60 relative overflow-hidden ${isDragging ? '' : 'transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]'}`}
       >
-        {/* Inner container maintains width so content doesn't squash during the slide animation */}
         <div style={{ width: `${sidebarWidth}px` }} className="h-full flex flex-col">
-          {/* Header area with toggle */}
-          <div className="flex items-center justify-between p-3 border-b border-base-900/50">
-            <button 
-              onClick={() => setIsSidebarOpen(false)}
-              className="p-1.5 text-base-400 hover:text-base-100 rounded-lg hover:bg-base-900 transition-colors"
-            >
-              <PanelLeft size={18} />
-            </button>
+          {/* Sidebar Header (Static) */}
+          <div className="flex-shrink-0 flex items-center justify-between p-3 border-b border-base-800/60 h-[53px]">
+            <span className="text-xs font-bold text-base-500 uppercase tracking-wider pl-2 select-none">
+              Explorer
+            </span>
+            
+            <div className="flex items-center gap-0.5">
+              <button 
+                onClick={() => setCollapseTrigger(prev => prev + 1)}
+                className="p-1.5 text-base-400 hover:text-indigo-400 rounded-md hover:bg-indigo-500/10 transition-colors active:scale-95"
+                title="Collapse All Folders"
+              >
+                <ListCollapse size={16} strokeWidth={2} />
+              </button>
+              
+              <button 
+                onClick={toggleSidebar}
+                className="p-1.5 text-base-400 hover:text-indigo-400 rounded-md hover:bg-indigo-500/10 transition-colors active:scale-95"
+                title="Close Sidebar"
+              >
+                <PanelLeft size={18} strokeWidth={2} />
+              </button>
+            </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto py-2">
+          {/* Sidebar Content (Scrollable) */}
+          <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
             {!loading && (
               <FileTree 
                 tree={tree} 
                 activeId={activeId} 
                 onSelect={handleSelect} 
                 onCreate={handleCreate} 
-                onDelete={handleDelete} 
+                onDelete={handleDelete}
+                collapseTrigger={collapseTrigger} 
               />
             )}
           </div>
         </div>
       </aside>
 
-      {/* 3. Drag Resizer Handle (Only visible when sidebar is open) */}
+      {/* Drag Resizer Handle */}
       {isSidebarOpen && (
         <div 
           onMouseDown={() => setIsDragging(true)}
-          className={`w-1 bg-transparent cursor-col-resize flex items-center justify-center absolute z-30 group hover:bg-accent-500/30 transition-colors ${isDragging ? 'bg-accent-500/30' : ''}`}
-          style={{ left: `calc(64px + ${sidebarWidth}px - 2px)`, top: 0, bottom: 0 }}
+          onTouchStart={() => setIsDragging(true)}
+          className="w-2 -ml-1 cursor-col-resize flex items-center justify-center relative z-20 group hover:bg-indigo-500/10 transition-colors"
         >
-          {/* Visual Handle */}
-          <div className="w-1 h-8 bg-base-700 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className={`w-[1px] h-full transition-colors ${isDragging ? 'bg-indigo-500' : 'bg-transparent group-hover:bg-indigo-500/50'}`} />
         </div>
       )}
 
-      {/* 4. Main Editor Area */}
-      <main className="flex-1 min-w-0 overflow-hidden bg-base-900/10 flex flex-col relative">
-        {/* Floating toggle button when sidebar is closed */}
-        {!isSidebarOpen && (
+      {/* Main Editor Area */}
+      <main className="flex-1 h-full min-w-0 overflow-hidden flex flex-col relative bg-[#0e0e0e]">
+        {!isSidebarOpen && !activeNode && (
           <button 
-            onClick={() => setIsSidebarOpen(true)}
-            className="absolute top-3 left-3 z-10 p-2 text-base-400 hover:text-base-100 rounded-lg hover:bg-base-900/80 bg-base-950 border border-base-800 shadow-sm transition-all"
+            onClick={toggleSidebar}
+            className="absolute top-3 left-3 z-10 p-2 text-base-400 hover:text-indigo-400 rounded-md hover:bg-indigo-500/10 bg-[#121212] border border-base-800 shadow-sm transition-all active:scale-95"
+            title="Open Sidebar"
           >
-            <PanelLeft size={18} />
+            <PanelLeft size={20} strokeWidth={1.5} />
           </button>
         )}
 
         {activeNode ? (
-          <NoteEditor key={activeNode.id} note={activeNode} onChanged={refresh} />
+          <NoteEditor 
+            key={activeNode.id} 
+            note={activeNode} 
+            onChanged={refresh} 
+            onToggleSidebar={toggleSidebar} 
+          />
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-base-400 gap-4 bg-base-950">
-            <div className="p-4 rounded-2xl bg-base-900 border border-base-800 shadow-sm">
-              <FileText size={48} className="opacity-50" />
+          <div className="h-full w-full overflow-y-auto flex flex-col items-center justify-center text-base-400 gap-5 bg-[#0e0e0e]">
+            <div className="p-5 rounded-2xl bg-[#121212] border border-base-800 shadow-sm">
+              <FileText size={48} className="text-base-600" strokeWidth={1.5} />
             </div>
-            <p className="text-sm font-medium">Select a note or create a new file to start writing.</p>
+            <div className="text-center space-y-1">
+              <h3 className="text-base-100 font-medium text-lg">No file selected</h3>
+              <p className="text-sm">Select a note from the sidebar or create a new one.</p>
+            </div>
+            
+            <button 
+              onClick={() => handleCreate(null, 'file')}
+              className="mt-4 flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all active:scale-95"
+            >
+              <Plus size={16} strokeWidth={2.5} /> New File
+            </button>
           </div>
         )}
       </main>
