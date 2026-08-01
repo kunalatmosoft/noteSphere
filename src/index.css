@@ -139,3 +139,9 @@ html {
 .animate-spin-slow {
   animation: spin-slow 4s linear infinite;
 }
+
+/* Apply this to the elements inside your target container */
+.print-safe-block {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}

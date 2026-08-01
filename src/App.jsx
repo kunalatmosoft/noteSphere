@@ -14,7 +14,7 @@ import Trending from './pages/Trending.jsx'
 import Library from './pages/library.jsx'
 import CommunityPage from './pages/CommunityPage.jsx'
 import PostDetailsPage from './pages/PostDetailsPage.jsx'
-
+import NotFound from './pages/NotFound'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   
@@ -62,7 +62,8 @@ export default function App() {
         
         {/* Single Reddit Post View */}
         <Route path="/r/post/:postId" element={<PostDetailsPage />} />
-        
+        {/* NOT FOUND PAGE! */}
+        <Route path="*" element={<NotFound/>}/>
       </Routes>
     </div>
   )
