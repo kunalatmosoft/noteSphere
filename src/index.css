@@ -6,8 +6,13 @@
 
 /* Global Resets & Scrollbars */
 * { box-sizing: border-box; }
-body { margin: 0; }
-html { scroll-behavior: smooth; }
+/* 1. Prevent Markdown & Body from creating mismatched background cutoffs */
+html, body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 4px; }
@@ -136,4 +141,33 @@ html { scroll-behavior: smooth; }
   padding: 0 !important;
   font-weight: 400 !important;
   text-shadow: none !important;
+}
+
+.markdown-body {
+  background-color: transparent !important;
+  color: inherit !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* 2. KaTeX Math Overflow Fix (Prevents equations from breaking container width) */
+.katex-display {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 0.5rem 0 !important;
+  margin: 0.75rem 0 !important;
+}
+
+.katex {
+  font-size: 1.05em !important;
+  text-rendering: auto !important;
+}
+
+/* 3. Smooth table scroll container */
+.table-scroll-wrapper {
+  scrollbar-width: thin;
 }

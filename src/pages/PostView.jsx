@@ -32,28 +32,20 @@ export default function PostView() {
     isFocusMode, setFocusMode
   } = useReaderStore()
 
-  // --- 30-Second Inactivity Auto-Hide Timer ---
+  // 30-Second Inactivity Auto-Hide Timer
   useEffect(() => {
     const handleActivity = () => {
       setIsUiVisible(true)
-      if (inactivityTimerRef.current) {
-        clearTimeout(inactivityTimerRef.current)
-      }
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
       inactivityTimerRef.current = setTimeout(() => {
-        // Only hide if settings menu isn't actively opened
-        if (!isSettingsOpen) {
-          setIsUiVisible(false)
-        }
-      }, 30000) // 30 seconds
+        if (!isSettingsOpen) setIsUiVisible(false)
+      }, 30000)
     }
 
     const events = ['mousemove', 'mousedown', 'touchstart', 'scroll', 'keydown']
     events.forEach(event => window.addEventListener(event, handleActivity))
 
-    // Initial timeout setup
-    inactivityTimerRef.current = setTimeout(() => {
-      setIsUiVisible(false)
-    }, 30000)
+    inactivityTimerRef.current = setTimeout(() => setIsUiVisible(false), 30000)
 
     return () => {
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
@@ -78,8 +70,7 @@ export default function PostView() {
             .map((line) => {
               const level = line.match(/^#+/)[0].length
               const text = line.replace(/^#+\s/, '')
-              const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
-              return { level, text, id }
+              return { level, text }
             })
           setTableOfContents(headings)
         }
@@ -112,7 +103,7 @@ export default function PostView() {
         }
       }
     } catch (err) {
-      console.error("Fullscreen API error:", err)
+      console.error("Fullscreen error:", err)
       setFocusMode(!isFocusMode) 
     }
   }
@@ -145,7 +136,7 @@ export default function PostView() {
 
   if (!post) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0f17] text-slate-400">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#0b0f17] text-slate-400">
         <div className="flex items-center gap-3 animate-pulse text-sm font-medium">
           <BookOpen className="animate-spin text-blue-500" size={20} />
           Loading document...
@@ -156,7 +147,7 @@ export default function PostView() {
 
   const date = post.createdAt?.toDate ? format(post.createdAt.toDate(), 'MMMM d, yyyy') : ''
 
-  // Theme Styles
+  // Consistent Theme Color Palettes (Applied universally across whole canvas)
   const themes = {
     light: {
       app: 'bg-[#fafafa] text-slate-900',
@@ -202,31 +193,32 @@ export default function PostView() {
   }
 
   return (
-    <div className={`relative min-h-screen transition-colors duration-300 ${activeTheme.app} ${fontFamily} antialiased selection:bg-blue-500/20`}>
+    <div className={`min-h-screen w-full transition-colors duration-300 ${activeTheme.app} ${fontFamily} antialiased selection:bg-blue-500/20`}>
       
-      {/* --- Floating Top Bar (Auto-hides after 30s inactivity) --- */}
+      {/* Floating Top Nav (Auto-hides after 30s) */}
 
-      {/* --- Main Document Container --- */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 py-16 lg:py-20 transition-all duration-300">
-        <div className="flex justify-center gap-8 lg:gap-14">
+
+      {/* Main Grid Wrapper */}
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-16 lg:py-20">
+        <div className="flex justify-center items-start gap-8 lg:gap-12 w-full">
           
-          {/* Main Article (Expands broader when sidebar is closed) */}
+          {/* Main Reading Canvas */}
           <main 
-            className={`w-full transition-all duration-300 min-w-0 ${
+            className={`w-full min-w-0 transition-all duration-300 ${
               isFocusMode 
-                ? 'max-w-5xl' 
-                : isSidebarOpen 
-                  ? 'max-w-4xl xl:max-w-5xl' 
-                  : 'max-w-5xl 2xl:max-w-6xl'
+                ? 'max-w-4xl mx-auto' 
+                : isSidebarOpen && tableOfContents.length > 0
+                  ? 'max-w-3xl xl:max-w-4xl' 
+                  : 'max-w-4xl xl:max-w-5xl mx-auto'
             }`}
           >
             {!isFocusMode && (
-              <header className="mb-10 pb-8 border-b border-current/10">
+              <header className="mb-10 pb-8 border-b border-current/10 w-full">
                 {post.cover && (
-                  <div className="overflow-hidden rounded-2xl mb-8 border border-white/10 shadow-lg">
+                  <div className="overflow-hidden rounded-2xl mb-8 border border-white/10 shadow-lg w-full">
                     <img 
                       src={post.cover} 
-                      className="w-full max-h-[440px] object-cover hover:scale-105 transition-transform duration-700" 
+                      className="w-full max-h-[420px] object-cover hover:scale-105 transition-transform duration-700" 
                       alt="Cover" 
                     />
                   </div>
@@ -261,7 +253,6 @@ export default function PostView() {
                     </div>
                   </div>
 
-                  {/* Document Actions */}
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={handleLike} 
@@ -274,7 +265,6 @@ export default function PostView() {
                     <button 
                       onClick={handleShare} 
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${activeTheme.btnInactive}`}
-                      title="Share Link"
                     >
                       {copiedLink ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
                       <span>{copiedLink ? 'Copied' : 'Share'}</span>
@@ -312,9 +302,9 @@ export default function PostView() {
             </div>
           </main>
 
-          {/* --- Hideable Desktop Sidebar (TOC) --- */}
+          {/* Desktop Right Outline (TOC) */}
           {!isFocusMode && tableOfContents.length > 0 && isSidebarOpen && (
-            <aside className="hidden lg:block w-72 shrink-0 transition-all duration-300">
+            <aside className="hidden lg:block w-72 shrink-0">
               <div className={`sticky top-20 p-5 rounded-2xl border ${activeTheme.panel}`}>
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-current/10">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider opacity-75">
@@ -354,7 +344,7 @@ export default function PostView() {
         </div>
       </div>
 
-      {/* --- Mobile TOC Slide-out Drawer --- */}
+      {/* Mobile TOC Drawer */}
       <div 
         className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300 lg:hidden ${
           isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -398,14 +388,12 @@ export default function PostView() {
         </div>
       </div>
 
-      {/* --- Floating Bottom Dock (Auto-hides after 30s inactivity) --- */}
+      {/* Floating Bottom Dock */}
       <div 
         className={`fixed bottom-6 right-6 z-40 flex items-center gap-1.5 p-1.5 rounded-2xl shadow-2xl border transition-all duration-500 ease-in-out ${
           isUiVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'
         } bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur-xl border-white/10 text-white`}
       >
-        
-        {/* Settings Flyout */}
         <div 
           className={`absolute bottom-full right-0 mb-3 p-4 rounded-2xl shadow-2xl border w-[260px] transition-all duration-200 origin-bottom-right ${
             activeTheme.panel
@@ -462,7 +450,6 @@ export default function PostView() {
           </button>
         </div>
 
-        {/* Action Buttons */}
         <button 
           onClick={scrollToTop} 
           className="p-2.5 rounded-xl hover:bg-white/10 transition-colors text-slate-300 hover:text-white" 
