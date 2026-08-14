@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&display=swap');
 
 /* Tailwind Directives */
 @tailwind base;
@@ -48,14 +48,13 @@ body {
 }
 
 /* =========================================================
-   2. ANTI-BLOWOUT CONTAINER GUARDS (Crucial for Mobile)
+   2. ANTI-BLOWOUT CONTAINER GUARDS (Mobile Safe)
    ========================================================= */
-/* Prevents parent flex/grid containers from expanding past 100vw */
 .prose-wrapper,
 .markdown-body {
   width: 100% !important;
   max-width: 100% !important;
-  min-width: 0 !important; /* CRITICAL: Stops flex items from blowing out */
+  min-width: 0 !important;
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
   background-color: transparent !important;
@@ -63,7 +62,7 @@ body {
 }
 
 /* =========================================================
-   3. RESPONSIVE TYPOGRAPHY & HEADINGS
+   3. RESPONSIVE TYPOGRAPHY
    ========================================================= */
 .markdown-body h1 {
   font-size: clamp(1.4rem, 4vw, 1.9rem);
@@ -97,16 +96,16 @@ body {
 }
 
 .markdown-body a {
-  color: #818cf8;
+  color: #4f46e5;
   text-decoration: underline;
   text-underline-offset: 2px;
-  overflow-wrap: anywhere; /* Prevents long URLs from pushing out mobile width */
+  overflow-wrap: anywhere;
 }
 
 .markdown-body blockquote {
   border-left: 3px solid #4f46e5;
   padding-left: 0.85em;
-  color: #c3c9d4;
+  color: #64748b;
   margin: 0.8em 0;
   min-width: 0;
 }
@@ -134,7 +133,7 @@ body {
   content: "" !important;
 }
 
-/* Multi-line Preformatted Code Blocks */
+/* Preformatted Multi-line Code */
 .markdown-body pre {
   width: 100% !important;
   max-width: 100% !important;
@@ -146,7 +145,6 @@ body {
   margin: 0.8em 0;
 }
 
-/* Syntax token base reset */
 .markdown-body pre code,
 .markdown-body div code {
   background: transparent !important;
@@ -160,26 +158,46 @@ body {
   word-break: normal !important;
 }
 
-/* Inline Code: Wrapped properly so long variable names don't expand screen */
-.markdown-body code:not(pre code):not(div code),
-.prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
+/* =========================================================
+   INLINE CODE: FORCED HIGH-CONTRAST LIGHT MODE
+   ========================================================= */
+
+/* 1. Target the inline code badge itself */
+:not(.dark) .markdown-body code:not(pre code):not(div code),
+:not(.dark) .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
   font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
-  font-size: 0.85em !important;
-  font-weight: 600 !important;
-  color: #4338ca !important;
-  background-color: #eef2ff !important;
-  border: 1px solid #c7d2fe !important;
-  padding: 0.12rem 0.35rem !important;
-  border-radius: 4px !important;
-  margin: 0 0.1rem !important;
+  font-size: 0.86em !important;
+  font-weight: 700 !important;
+  color: #1e1b4b !important;                  /* Ultra-dark Indigo (almost black) */
+  background-color: #e0e7ff !important;       /* Clean lavender/indigo background */
+  border: 1px solid #818cf8 !important;       /* Strong border */
+  padding: 0.15rem 0.4rem !important;
+  border-radius: 5px !important;
+  margin: 0 0.15rem !important;
   text-shadow: none !important;
-  overflow-wrap: anywhere !important;
-  white-space: break-spaces !important;
-  display: inline !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 2. Force all inner tokens (operators, functions, spans, math symbols) to dark */
+:not(.dark) .markdown-body code:not(pre code):not(div code) *,
+:not(.dark) .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) * {
+  color: #1e1b4b !important;                  /* Overrides Prism/Highlight.js token colors */
+  background: transparent !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;                      /* Strips any faded opacity */
+  text-shadow: none !important;
+}
+
+/* Fixes faint nested symbols (Ω, math variables, sub-spans) */
+.markdown-body code:not(pre code):not(div code) *,
+.prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) * {
+  color: #1e1b4b !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
 }
 
 /* =========================================================
-   5. TABLES (Isolated Scroll Container on Mobile)
+   5. TABLES & MATH
    ========================================================= */
 .markdown-body table {
   border-collapse: collapse;
@@ -193,15 +211,12 @@ body {
 
 .markdown-body th,
 .markdown-body td {
-  border: 1px solid #2a2f3a;
+  border: 1px solid #cbd5e1;
   padding: 6px 10px;
   min-width: 70px;
   font-size: 0.9em;
 }
 
-/* =========================================================
-   6. MATH (KaTeX) MOBILE FIXES
-   ========================================================= */
 .katex-display {
   width: 100% !important;
   max-width: 100% !important;
@@ -219,7 +234,7 @@ body {
 }
 
 /* =========================================================
-   7. THEME OVERRIDES
+   6. THEME OVERRIDES (Dark, Sepia, ChatGPT)
    ========================================================= */
 
 /* --- Dark Theme --- */
@@ -241,12 +256,31 @@ body {
   --tw-prose-td-borders: #1e293b;
 }
 
+.dark .markdown-body th,
+.dark .markdown-body td {
+  border-color: #334155;
+}
+
+.dark .markdown-body blockquote {
+  color: #c3c9d4;
+}
+
+.dark .markdown-body a {
+  color: #818cf8;
+}
+
 .dark .markdown-body code:not(pre code):not(div code),
 .prose-wrapper.prose-invert :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code),
 .dark .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
-  color: #a5b4fc !important;
+  color: #526df2 !important;
   background-color: rgba(99, 102, 241, 0.12) !important;
   border: 1px solid rgba(99, 102, 241, 0.25) !important;
+}
+
+.dark .markdown-body code:not(pre code):not(div code) *,
+.prose-wrapper.prose-invert :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) *,
+.dark .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) * {
+  color: #a5b4fc !important;
 }
 
 /* --- Sepia Theme --- */
@@ -274,6 +308,11 @@ body {
   border: 1px solid #d4c4a8 !important;
 }
 
+.prose-wrapper.prose-sepia :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) *,
+.prose-sepia .markdown-body code:not(pre code):not(div code) * {
+  color: #433020 !important;
+}
+
 /* --- ChatGPT Theme --- */
 .prose-chatgpt,
 .prose-wrapper.prose-chatgpt {
@@ -297,4 +336,9 @@ body {
   background-color: #343541 !important;
   color: #10a37f !important;
   border: 1px solid #565869 !important;
+}
+
+.prose-wrapper.prose-chatgpt :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) *,
+.prose-chatgpt .markdown-body code:not(pre code):not(div code) * {
+  color: #10a37f !important;
 }
