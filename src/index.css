@@ -1,32 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@plugin "@tailwindcss/typography"; 
+@plugin "@tailwindcss/typography";
 
-/* stylelint: allow Tailwind at-rules like @apply */
-/* stylelint-disable at-rule-no-unknown */
-
+/* Global Resets & Scrollbars */
 * { box-sizing: border-box; }
 body { margin: 0; }
+html { scroll-behavior: smooth; }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-* { box-sizing: border-box; }
-body { margin: 0; }
-
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-
+/* Markdown Core Styling */
 .markdown-body h1 { font-size: 1.9rem; font-weight: 800; margin: 1.2em 0 0.5em; }
 .markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin: 1.1em 0 0.5em; }
 .markdown-body h3 { font-size: 1.2rem; font-weight: 700; margin: 1em 0 0.4em; }
 .markdown-body p { line-height: 1.75; margin: 0.6em 0; }
-.markdown-body code { background: #1c2028; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
-.markdown-body pre { background: #12151a; padding: 14px; border-radius: 10px; overflow-x: auto; }
-.markdown-body pre code { background: none; padding: 0; }
 .markdown-body blockquote { border-left: 3px solid #4f46e5; padding-left: 1em; color: #c3c9d4; margin: 0.8em 0; }
 .markdown-body ul, .markdown-body ol { padding-left: 1.4em; }
 .markdown-body img { max-width: 100%; border-radius: 8px; }
@@ -34,31 +25,36 @@ body { margin: 0; }
 .markdown-body th, .markdown-body td { border: 1px solid #2a2f3a; padding: 6px 10px; }
 .markdown-body a { color: #818cf8; }
 
-
-/* Enable smooth scrolling globally */
-html {
-  scroll-behavior: smooth;
+/* Remove Tailwind Typography's default pseudo backticks (``) */
+.prose code::before,
+.prose code::after,
+.markdown-body code::before,
+.markdown-body code::after {
+  content: "" !important;
 }
 
-@layer components {
-  /* Base custom styles for Markdown Wrapper */
-  .prose-wrapper {
-    @apply prose prose-slate max-w-none transition-colors duration-500;
-  }
-}
-
-/* =========================================
-   INLINE CODE STYLES (Light Mode Default)
-   ========================================= */
-/* Specifically target inline code in text to avoid breaking react-syntax-highlighter */
+/* =========================================================
+   INLINE CODE STYLES (Light Mode Default - Electric Indigo)
+   ========================================================= */
+.markdown-body code:not(pre code):not(div code),
 .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
-  @apply bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded-md font-semibold;
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
+  font-size: 0.88em !important;
+  font-weight: 600 !important;
+  color: #4338ca !important;                  /* Deep Indigo text (Crisp & high-contrast) */
+  background-color: #eef2ff !important;       /* Soft Indigo tint */
+  border: 1px solid #c7d2fe !important;       /* Subtle outline */
+  padding: 0.15rem 0.4rem !important;
+  border-radius: 5px !important;
+  margin: 0 0.15rem !important;
+  text-shadow: none !important;
 }
 
-/* =========================================
+/* =========================================================
    DARK MODE OVERRIDES
-   ========================================= */
-.prose-wrapper.prose-invert {
+   ========================================================= */
+.prose-wrapper.prose-invert,
+.dark .markdown-body {
   --tw-prose-body: #cbd5e1;
   --tw-prose-headings: #f8fafc;
   --tw-prose-lead: #94a3b8;
@@ -74,14 +70,16 @@ html {
   --tw-prose-td-borders: #1e293b;
 }
 
-/* Dark mode inline code */
+.dark .markdown-body code:not(pre code):not(div code),
 .prose-wrapper.prose-invert :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
-  @apply bg-slate-800 text-slate-200;
+  color: #a5b4fc !important;                  /* Bright Lavender/Indigo */
+  background-color: rgba(99, 102, 241, 0.12) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
 }
 
-/* =========================================
+/* =========================================================
    SEPIA THEME OVERRIDES
-   ========================================= */
+   ========================================================= */
 .prose-sepia {
   --tw-prose-body: #5b4636;
   --tw-prose-headings: #433020;
@@ -98,21 +96,20 @@ html {
   --tw-prose-td-borders: #e5d8bc;
 }
 
-/* Sepia inline code */
 .prose-wrapper.prose-sepia :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
-  background-color: #e5d8bc;
-  color: #433020;
-  @apply px-1.5 py-0.5 rounded-md font-semibold;
+  background-color: #e5d8bc !important;
+  color: #433020 !important;
+  border: 1px solid #d4c4a8 !important;
 }
 
-/* =========================================
+/* =========================================================
    CHATGPT THEME OVERRIDES
-   ========================================= */
+   ========================================================= */
 .prose-chatgpt {
   --tw-prose-body: #ececf1;
   --tw-prose-headings: #ffffff;
   --tw-prose-lead: #c5c5d2;
-  --tw-prose-links: #10a37f; /* ChatGPT Green */
+  --tw-prose-links: #10a37f;
   --tw-prose-bold: #ffffff;
   --tw-prose-counters: #ececf1;
   --tw-prose-bullets: #ececf1;
@@ -124,24 +121,19 @@ html {
   --tw-prose-td-borders: #343541;
 }
 
-/* ChatGPT inline code */
 .prose-wrapper.prose-chatgpt :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
-  background-color: #343541;
-  color: #ececf1;
-  @apply px-1.5 py-0.5 rounded-md font-semibold;
+  background-color: #343541 !important;
+  color: #10a37f !important;                  /* Mint / ChatGPT accent */
+  border: 1px solid #565869 !important;
 }
 
-/* Slower spin animation for the settings cog */
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.animate-spin-slow {
-  animation: spin-slow 4s linear infinite;
-}
-
-/* Apply this to the elements inside your target container */
-.print-safe-block {
-  page-break-inside: avoid;
-  break-inside: avoid;
+/* Strips syntax highlighter inner token backgrounds */
+.markdown-body pre code,
+.markdown-body div code {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font-weight: 400 !important;
+  text-shadow: none !important;
 }
