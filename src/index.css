@@ -1,36 +1,126 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap');
+
+/* Tailwind Directives (Use this for Tailwind v3) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@plugin "@tailwindcss/typography";
 
-/* Global Resets & Scrollbars */
-* { box-sizing: border-box; }
-/* 1. Prevent Markdown & Body from creating mismatched background cutoffs */
-html, body {
+/* 
+ * NOTE: If you are using Tailwind v4, replace the 4 lines above with:
+ * @import "tailwindcss";
+ * @plugin "@tailwindcss/typography";
+ */
+
+/* =========================================================
+   1. GLOBAL RESETS & CROSS-BROWSER SCROLLBARS
+   ========================================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
   width: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: #2a2f3a; border-radius: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2f3a transparent;
+}
 
-/* Markdown Core Styling */
-.markdown-body h1 { font-size: 1.9rem; font-weight: 800; margin: 1.2em 0 0.5em; }
-.markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin: 1.1em 0 0.5em; }
-.markdown-body h3 { font-size: 1.2rem; font-weight: 700; margin: 1em 0 0.4em; }
+/* WebKit scrollbar (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2f3a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f4756;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* =========================================================
+   2. MARKDOWN CORE & RESPONSIVE VIEWPORT SAFEGUARDS
+   ========================================================= */
+.markdown-body {
+  background-color: transparent !important;
+  color: inherit !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+}
+
+.markdown-body h1 { font-size: 1.9rem; font-weight: 800; margin: 1.2em 0 0.5em; line-height: 1.25; }
+.markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin: 1.1em 0 0.5em; line-height: 1.3; }
+.markdown-body h3 { font-size: 1.2rem; font-weight: 700; margin: 1em 0 0.4em; line-height: 1.35; }
 .markdown-body p { line-height: 1.75; margin: 0.6em 0; }
-.markdown-body blockquote { border-left: 3px solid #4f46e5; padding-left: 1em; color: #c3c9d4; margin: 0.8em 0; }
-.markdown-body ul, .markdown-body ol { padding-left: 1.4em; }
-.markdown-body img { max-width: 100%; border-radius: 8px; }
-.markdown-body table { border-collapse: collapse; width: 100%; }
-.markdown-body th, .markdown-body td { border: 1px solid #2a2f3a; padding: 6px 10px; }
-.markdown-body a { color: #818cf8; }
 
-/* Remove Tailwind Typography's default pseudo backticks (``) */
+.markdown-body blockquote {
+  border-left: 3px solid #4f46e5;
+  padding-left: 1em;
+  color: #c3c9d4;
+  margin: 0.8em 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.4em;
+  margin: 0.6em 0;
+}
+
+/* Prevent image distortion and mobile overflows */
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* Responsive Table Handling: prevents wide tables from breaking mobile screens */
+.markdown-body table {
+  border-collapse: collapse;
+  width: 100%;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0.8em 0;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid #2a2f3a;
+  padding: 6px 10px;
+}
+
+.markdown-body a {
+  color: #818cf8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* =========================================================
+   3. CODE BLOCKS & INLINE CODE
+   ========================================================= */
+
+/* Remove Tailwind Typography default pseudo backticks */
 .prose code::before,
 .prose code::after,
 .markdown-body code::before,
@@ -38,28 +128,50 @@ html, body {
   content: "" !important;
 }
 
-/* =========================================================
-   INLINE CODE STYLES (Light Mode Default - Electric Indigo)
-   ========================================================= */
+/* Prevent multi-line code blocks from breaking viewport width */
+.markdown-body pre {
+  max-width: 100%;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+}
+
+/* Reset syntax highlighter inner tokens */
+.markdown-body pre code,
+.markdown-body div code {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font-weight: 400 !important;
+  text-shadow: none !important;
+  color: inherit !important;
+}
+
+/* Inline Code: Light Mode Default (Electric Indigo) */
 .markdown-body code:not(pre code):not(div code),
-.prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
+.prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
   font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
   font-size: 0.88em !important;
   font-weight: 600 !important;
-  color: #4338ca !important;                  /* Deep Indigo text (Crisp & high-contrast) */
-  background-color: #eef2ff !important;       /* Soft Indigo tint */
-  border: 1px solid #c7d2fe !important;       /* Subtle outline */
+  color: #4338ca !important;
+  background-color: #eef2ff !important;
+  border: 1px solid #c7d2fe !important;
   padding: 0.15rem 0.4rem !important;
   border-radius: 5px !important;
   margin: 0 0.15rem !important;
   text-shadow: none !important;
+  word-break: break-word;
 }
 
 /* =========================================================
-   DARK MODE OVERRIDES
+   4. THEME OVERRIDES (Dark, Sepia, ChatGPT)
    ========================================================= */
+
+/* --- Dark Theme --- */
 .prose-wrapper.prose-invert,
-.dark .markdown-body {
+.dark .markdown-body,
+.dark .prose-wrapper {
   --tw-prose-body: #cbd5e1;
   --tw-prose-headings: #f8fafc;
   --tw-prose-lead: #94a3b8;
@@ -76,16 +188,16 @@ html, body {
 }
 
 .dark .markdown-body code:not(pre code):not(div code),
-.prose-wrapper.prose-invert :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
-  color: #a5b4fc !important;                  /* Bright Lavender/Indigo */
+.prose-wrapper.prose-invert :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code),
+.dark .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
+  color: #a5b4fc !important;
   background-color: rgba(99, 102, 241, 0.12) !important;
   border: 1px solid rgba(99, 102, 241, 0.25) !important;
 }
 
-/* =========================================================
-   SEPIA THEME OVERRIDES
-   ========================================================= */
-.prose-sepia {
+/* --- Sepia Theme --- */
+.prose-sepia,
+.prose-wrapper.prose-sepia {
   --tw-prose-body: #5b4636;
   --tw-prose-headings: #433020;
   --tw-prose-lead: #705b4a;
@@ -101,16 +213,16 @@ html, body {
   --tw-prose-td-borders: #e5d8bc;
 }
 
-.prose-wrapper.prose-sepia :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
+.prose-wrapper.prose-sepia :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code),
+.prose-sepia .markdown-body code:not(pre code):not(div code) {
   background-color: #e5d8bc !important;
   color: #433020 !important;
   border: 1px solid #d4c4a8 !important;
 }
 
-/* =========================================================
-   CHATGPT THEME OVERRIDES
-   ========================================================= */
-.prose-chatgpt {
+/* --- ChatGPT Theme --- */
+.prose-chatgpt,
+.prose-wrapper.prose-chatgpt {
   --tw-prose-body: #ececf1;
   --tw-prose-headings: #ffffff;
   --tw-prose-lead: #c5c5d2;
@@ -126,38 +238,22 @@ html, body {
   --tw-prose-td-borders: #343541;
 }
 
-.prose-wrapper.prose-chatgpt :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code {
+.prose-wrapper.prose-chatgpt :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code),
+.prose-chatgpt .markdown-body code:not(pre code):not(div code) {
   background-color: #343541 !important;
-  color: #10a37f !important;                  /* Mint / ChatGPT accent */
+  color: #10a37f !important;
   border: 1px solid #565869 !important;
 }
 
-/* Strips syntax highlighter inner token backgrounds */
-.markdown-body pre code,
-.markdown-body div code {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  font-weight: 400 !important;
-  text-shadow: none !important;
-}
-
-.markdown-body {
-  background-color: transparent !important;
-  color: inherit !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow-wrap: break-word !important;
-  word-break: break-word !important;
-}
-
-/* 2. KaTeX Math Overflow Fix (Prevents equations from breaking container width) */
+/* =========================================================
+   5. MATH (KaTeX) & CONTAINER UTILITIES
+   ========================================================= */
 .katex-display {
   width: 100% !important;
   max-width: 100% !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
   padding: 0.5rem 0 !important;
   margin: 0.75rem 0 !important;
 }
@@ -167,7 +263,9 @@ html, body {
   text-rendering: auto !important;
 }
 
-/* 3. Smooth table scroll container */
 .table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
