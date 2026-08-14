@@ -1,18 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;600&display=swap');
 
-/* Tailwind Directives (Use this for Tailwind v3) */
+/* Tailwind Directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 
- * NOTE: If you are using Tailwind v4, replace the 4 lines above with:
- * @import "tailwindcss";
- * @plugin "@tailwindcss/typography";
- */
-
 /* =========================================================
-   1. GLOBAL RESETS & CROSS-BROWSER SCROLLBARS
+   1. VIEWPORT & ROOT RESILIENCE
    ========================================================= */
 *,
 *::before,
@@ -23,23 +17,25 @@
 html,
 body {
   width: 100%;
-  min-height: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  position: relative;
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
-/* Firefox scrollbar */
+/* Firefox scrollbars */
 * {
   scrollbar-width: thin;
   scrollbar-color: #2a2f3a transparent;
 }
 
-/* WebKit scrollbar (Chrome, Edge, Safari) */
+/* WebKit scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -47,53 +43,144 @@ body {
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #3f4756;
-}
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
 /* =========================================================
-   2. MARKDOWN CORE & RESPONSIVE VIEWPORT SAFEGUARDS
+   2. ANTI-BLOWOUT CONTAINER GUARDS (Crucial for Mobile)
    ========================================================= */
+/* Prevents parent flex/grid containers from expanding past 100vw */
+.prose-wrapper,
 .markdown-body {
-  background-color: transparent !important;
-  color: inherit !important;
   width: 100% !important;
   max-width: 100% !important;
-  overflow-wrap: break-word !important;
-  word-wrap: break-word !important;
+  min-width: 0 !important; /* CRITICAL: Stops flex items from blowing out */
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  background-color: transparent !important;
+  color: inherit !important;
 }
 
-.markdown-body h1 { font-size: 1.9rem; font-weight: 800; margin: 1.2em 0 0.5em; line-height: 1.25; }
-.markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin: 1.1em 0 0.5em; line-height: 1.3; }
-.markdown-body h3 { font-size: 1.2rem; font-weight: 700; margin: 1em 0 0.4em; line-height: 1.35; }
-.markdown-body p { line-height: 1.75; margin: 0.6em 0; }
+/* =========================================================
+   3. RESPONSIVE TYPOGRAPHY & HEADINGS
+   ========================================================= */
+.markdown-body h1 {
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  font-weight: 800;
+  margin: 1.2em 0 0.5em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.markdown-body h2 {
+  font-size: clamp(1.2rem, 3.5vw, 1.5rem);
+  font-weight: 700;
+  margin: 1.1em 0 0.5em;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.markdown-body h3 {
+  font-size: clamp(1.05rem, 3vw, 1.2rem);
+  font-weight: 700;
+  margin: 1em 0 0.4em;
+  line-height: 1.35;
+}
+
+.markdown-body p,
+.markdown-body li {
+  line-height: 1.7;
+  margin: 0.5em 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdown-body a {
+  color: #818cf8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere; /* Prevents long URLs from pushing out mobile width */
+}
 
 .markdown-body blockquote {
   border-left: 3px solid #4f46e5;
-  padding-left: 1em;
+  padding-left: 0.85em;
   color: #c3c9d4;
   margin: 0.8em 0;
+  min-width: 0;
 }
 
 .markdown-body ul,
 .markdown-body ol {
-  padding-left: 1.4em;
+  padding-left: 1.25em;
   margin: 0.6em 0;
 }
 
-/* Prevent image distortion and mobile overflows */
 .markdown-body img {
-  max-width: 100%;
-  height: auto;
+  max-width: 100% !important;
+  height: auto !important;
   display: block;
   border-radius: 8px;
 }
 
-/* Responsive Table Handling: prevents wide tables from breaking mobile screens */
+/* =========================================================
+   4. CODE BLOCKS & INLINE CODE
+   ========================================================= */
+.prose code::before,
+.prose code::after,
+.markdown-body code::before,
+.markdown-body code::after {
+  content: "" !important;
+}
+
+/* Multi-line Preformatted Code Blocks */
+.markdown-body pre {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  padding: 0.85rem;
+  margin: 0.8em 0;
+}
+
+/* Syntax token base reset */
+.markdown-body pre code,
+.markdown-body div code {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  font-weight: 400 !important;
+  text-shadow: none !important;
+  color: inherit !important;
+  white-space: pre !important;
+  word-break: normal !important;
+}
+
+/* Inline Code: Wrapped properly so long variable names don't expand screen */
+.markdown-body code:not(pre code):not(div code),
+.prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
+  font-size: 0.85em !important;
+  font-weight: 600 !important;
+  color: #4338ca !important;
+  background-color: #eef2ff !important;
+  border: 1px solid #c7d2fe !important;
+  padding: 0.12rem 0.35rem !important;
+  border-radius: 4px !important;
+  margin: 0 0.1rem !important;
+  text-shadow: none !important;
+  overflow-wrap: anywhere !important;
+  white-space: break-spaces !important;
+  display: inline !important;
+}
+
+/* =========================================================
+   5. TABLES (Isolated Scroll Container on Mobile)
+   ========================================================= */
 .markdown-body table {
   border-collapse: collapse;
   width: 100%;
@@ -108,64 +195,31 @@ body {
 .markdown-body td {
   border: 1px solid #2a2f3a;
   padding: 6px 10px;
-}
-
-.markdown-body a {
-  color: #818cf8;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  min-width: 70px;
+  font-size: 0.9em;
 }
 
 /* =========================================================
-   3. CODE BLOCKS & INLINE CODE
+   6. MATH (KaTeX) MOBILE FIXES
    ========================================================= */
-
-/* Remove Tailwind Typography default pseudo backticks */
-.prose code::before,
-.prose code::after,
-.markdown-body code::before,
-.markdown-body code::after {
-  content: "" !important;
-}
-
-/* Prevent multi-line code blocks from breaking viewport width */
-.markdown-body pre {
-  max-width: 100%;
+.katex-display {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
   overflow-x: auto !important;
+  overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch;
-  border-radius: 8px;
+  padding: 0.5rem 0 !important;
+  margin: 0.75rem 0 !important;
 }
 
-/* Reset syntax highlighter inner tokens */
-.markdown-body pre code,
-.markdown-body div code {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  font-weight: 400 !important;
-  text-shadow: none !important;
-  color: inherit !important;
-}
-
-/* Inline Code: Light Mode Default (Electric Indigo) */
-.markdown-body code:not(pre code):not(div code),
-.prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
-  font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
-  font-size: 0.88em !important;
-  font-weight: 600 !important;
-  color: #4338ca !important;
-  background-color: #eef2ff !important;
-  border: 1px solid #c7d2fe !important;
-  padding: 0.15rem 0.4rem !important;
-  border-radius: 5px !important;
-  margin: 0 0.15rem !important;
-  text-shadow: none !important;
-  word-break: break-word;
+.katex {
+  font-size: clamp(0.9em, 2.5vw, 1.05em) !important;
+  text-rendering: auto !important;
 }
 
 /* =========================================================
-   4. THEME OVERRIDES (Dark, Sepia, ChatGPT)
+   7. THEME OVERRIDES
    ========================================================= */
 
 /* --- Dark Theme --- */
@@ -243,29 +297,4 @@ body {
   background-color: #343541 !important;
   color: #10a37f !important;
   border: 1px solid #565869 !important;
-}
-
-/* =========================================================
-   5. MATH (KaTeX) & CONTAINER UTILITIES
-   ========================================================= */
-.katex-display {
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  -webkit-overflow-scrolling: touch;
-  padding: 0.5rem 0 !important;
-  margin: 0.75rem 0 !important;
-}
-
-.katex {
-  font-size: 1.05em !important;
-  text-rendering: auto !important;
-}
-
-.table-scroll-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
 }
