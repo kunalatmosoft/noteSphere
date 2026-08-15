@@ -20,35 +20,55 @@ body {
   max-width: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  /* CRITICAL FIX: Replaced 'hidden' with 'clip' to prevent breaking 'position: sticky' */
+  overflow-x: clip; 
   position: relative;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Optional: Smooth scrolling for anchor links (TOC clicks) */
+  scroll-behavior: smooth;
 }
 
-/* Firefox scrollbars */
+/* =========================================================
+   2. MODERN, DISCREET SCROLLBARS (Vercel/Linear aesthetic)
+   ========================================================= */
+/* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a2f3a transparent;
+  scrollbar-color: rgba(113, 113, 122, 0.4) transparent;
 }
 
-/* WebKit scrollbars */
+/* WebKit (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #2a2f3a;
-  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
+::-webkit-scrollbar-thumb {
+  background: rgba(113, 113, 122, 0.3);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(113, 113, 122, 0.6);
+}
+
+/* Hide scrollbar completely for specific components if needed using this class */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* =========================================================
-   2. ANTI-BLOWOUT CONTAINER GUARDS (Mobile Safe)
+   3. ANTI-BLOWOUT CONTAINER GUARDS (Mobile Safe)
    ========================================================= */
 .prose-wrapper,
 .markdown-body {
@@ -62,69 +82,82 @@ body {
 }
 
 /* =========================================================
-   3. RESPONSIVE TYPOGRAPHY
+   4. RESPONSIVE TYPOGRAPHY
    ========================================================= */
 .markdown-body h1 {
-  font-size: clamp(1.4rem, 4vw, 1.9rem);
-  font-weight: 800;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 900;
   margin: 1.2em 0 0.5em;
-  line-height: 1.25;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
 
 .markdown-body h2 {
-  font-size: clamp(1.2rem, 3.5vw, 1.5rem);
-  font-weight: 700;
-  margin: 1.1em 0 0.5em;
-  line-height: 1.3;
+  font-size: clamp(1.4rem, 4vw, 1.75rem);
+  font-weight: 800;
+  margin: 1.5em 0 0.5em;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 
 .markdown-body h3 {
-  font-size: clamp(1.05rem, 3vw, 1.2rem);
+  font-size: clamp(1.15rem, 3.5vw, 1.35rem);
   font-weight: 700;
-  margin: 1em 0 0.4em;
-  line-height: 1.35;
+  margin: 1.2em 0 0.4em;
+  line-height: 1.3;
 }
 
 .markdown-body p,
 .markdown-body li {
-  line-height: 1.7;
-  margin: 0.5em 0;
+  line-height: 1.75;
+  margin: 0.6em 0;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
 .markdown-body a {
-  color: #4f46e5;
+  color: #3b82f6;
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  transition: all 0.2s ease;
   overflow-wrap: anywhere;
 }
 
+.markdown-body a:hover {
+  text-decoration-thickness: 2px;
+  color: #60a5fa;
+}
+
 .markdown-body blockquote {
-  border-left: 3px solid #4f46e5;
-  padding-left: 0.85em;
-  color: #64748b;
-  margin: 0.8em 0;
+  border-left: 4px solid #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+  padding: 0.5em 1em;
+  border-radius: 0 8px 8px 0;
+  color: #94a3b8;
+  margin: 1em 0;
   min-width: 0;
+  font-style: italic;
 }
 
 .markdown-body ul,
 .markdown-body ol {
-  padding-left: 1.25em;
-  margin: 0.6em 0;
+  padding-left: 1.5em;
+  margin: 0.8em 0;
 }
 
 .markdown-body img {
   max-width: 100% !important;
   height: auto !important;
   display: block;
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 /* =========================================================
-   4. CODE BLOCKS & INLINE CODE
+   5. CODE BLOCKS & INLINE CODE
    ========================================================= */
 .prose code::before,
 .prose code::after,
@@ -140,9 +173,10 @@ body {
   min-width: 0 !important;
   overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
-  border-radius: 8px;
-  padding: 0.85rem;
-  margin: 0.8em 0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1em 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .markdown-body pre code,
@@ -158,46 +192,32 @@ body {
   word-break: normal !important;
 }
 
-/* =========================================================
-   INLINE CODE: FORCED HIGH-CONTRAST LIGHT MODE
-   ========================================================= */
-
-/* 1. Target the inline code badge itself */
+/* INLINE CODE: FORCED HIGH-CONTRAST LIGHT MODE */
 :not(.dark) .markdown-body code:not(pre code):not(div code),
 :not(.dark) .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
   font-family: 'JetBrains Mono', 'Roboto Mono', monospace !important;
   font-size: 0.86em !important;
   font-weight: 700 !important;
-  color: #1e1b4b !important;                  /* Ultra-dark Indigo (almost black) */
-  background-color: #e0e7ff !important;       /* Clean lavender/indigo background */
-  border: 1px solid #818cf8 !important;       /* Strong border */
-  padding: 0.15rem 0.4rem !important;
-  border-radius: 5px !important;
+  color: #1e1b4b !important;
+  background-color: #e0e7ff !important;
+  border: 1px solid #c7d2fe !important;
+  padding: 0.2rem 0.4rem !important;
+  border-radius: 6px !important;
   margin: 0 0.15rem !important;
-  text-shadow: none !important;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 2. Force all inner tokens (operators, functions, spans, math symbols) to dark */
 :not(.dark) .markdown-body code:not(pre code):not(div code) *,
 :not(.dark) .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) * {
-  color: #1e1b4b !important;                  /* Overrides Prism/Highlight.js token colors */
+  color: #1e1b4b !important;
   background: transparent !important;
   font-weight: 700 !important;
-  opacity: 1 !important;                      /* Strips any faded opacity */
+  opacity: 1 !important;
   text-shadow: none !important;
 }
 
-/* Fixes faint nested symbols (Ω, math variables, sub-spans) */
-.markdown-body code:not(pre code):not(div code) *,
-.prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) * {
-  color: #1e1b4b !important;
-  font-weight: 700 !important;
-  opacity: 1 !important;
-}
-
 /* =========================================================
-   5. TABLES & MATH
+   6. TABLES & MATH
    ========================================================= */
 .markdown-body table {
   border-collapse: collapse;
@@ -206,15 +226,21 @@ body {
   max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: 0.8em 0;
+  margin: 1em 0;
+  border-radius: 8px;
 }
 
 .markdown-body th,
 .markdown-body td {
   border: 1px solid #cbd5e1;
-  padding: 6px 10px;
-  min-width: 70px;
+  padding: 8px 12px;
+  min-width: 80px;
   font-size: 0.9em;
+}
+
+.markdown-body th {
+  background-color: rgba(0, 0, 0, 0.03);
+  font-weight: 600;
 }
 
 .katex-display {
@@ -225,92 +251,98 @@ body {
   overflow-y: hidden !important;
   -webkit-overflow-scrolling: touch;
   padding: 0.5rem 0 !important;
-  margin: 0.75rem 0 !important;
+  margin: 1rem 0 !important;
 }
 
 .katex {
-  font-size: clamp(0.9em, 2.5vw, 1.05em) !important;
+  font-size: clamp(0.9em, 2.5vw, 1.1em) !important;
   text-rendering: auto !important;
 }
 
 /* =========================================================
-   6. THEME OVERRIDES (Dark, Sepia, ChatGPT)
+   7. THEME OVERRIDES (Dark, Sepia, ChatGPT)
    ========================================================= */
 
 /* --- Dark Theme --- */
 .prose-wrapper.prose-invert,
 .dark .markdown-body,
 .dark .prose-wrapper {
-  --tw-prose-body: #cbd5e1;
-  --tw-prose-headings: #f8fafc;
-  --tw-prose-lead: #94a3b8;
-  --tw-prose-links: #60a5fa;
-  --tw-prose-bold: #f8fafc;
-  --tw-prose-counters: #94a3b8;
-  --tw-prose-bullets: #475569;
-  --tw-prose-hr: #334155;
-  --tw-prose-quotes: #f1f5f9;
-  --tw-prose-quote-borders: #334155;
-  --tw-prose-captions: #94a3b8;
-  --tw-prose-th-borders: #334155;
-  --tw-prose-td-borders: #1e293b;
+  --tw-prose-body: #d4d4d8; /* Zinc 300 */
+  --tw-prose-headings: #fafafa; /* Zinc 50 */
+  --tw-prose-lead: #a1a1aa; /* Zinc 400 */
+  --tw-prose-links: #10b981; /* Emerald 500 matching the active TOC */
+  --tw-prose-bold: #fafafa;
+  --tw-prose-counters: #a1a1aa;
+  --tw-prose-bullets: #52525b; /* Zinc 600 */
+  --tw-prose-hr: #27272a; /* Zinc 800 */
+  --tw-prose-quotes: #e4e4e7;
+  --tw-prose-quote-borders: #10b981;
+  --tw-prose-captions: #a1a1aa;
+  --tw-prose-th-borders: #27272a;
+  --tw-prose-td-borders: #18181b;
 }
 
 .dark .markdown-body th,
 .dark .markdown-body td {
-  border-color: #334155;
+  border-color: #27272a;
+}
+
+.dark .markdown-body th {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .dark .markdown-body blockquote {
-  color: #c3c9d4;
+  color: #a1a1aa;
+  background: rgba(16, 185, 129, 0.05); /* Emerald tint */
+  border-left-color: #10b981;
 }
 
 .dark .markdown-body a {
-  color: #818cf8;
+  color: #34d399; /* Emerald 400 */
 }
 
 .dark .markdown-body code:not(pre code):not(div code),
 .prose-wrapper.prose-invert :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code),
 .dark .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) {
-  color: #526df2 !important;
-  background-color: rgba(99, 102, 241, 0.12) !important;
-  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+  color: #34d399 !important; /* Emerald 400 */
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid rgba(16, 185, 129, 0.2) !important;
 }
 
 .dark .markdown-body code:not(pre code):not(div code) *,
 .prose-wrapper.prose-invert :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) *,
 .dark .prose-wrapper :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) * {
-  color: #a5b4fc !important;
+  color: #34d399 !important;
 }
 
 /* --- Sepia Theme --- */
 .prose-sepia,
 .prose-wrapper.prose-sepia {
   --tw-prose-body: #5b4636;
-  --tw-prose-headings: #433020;
+  --tw-prose-headings: #3d2b1f;
   --tw-prose-lead: #705b4a;
   --tw-prose-links: #c26a27;
-  --tw-prose-bold: #433020;
+  --tw-prose-bold: #3d2b1f;
   --tw-prose-counters: #8c735d;
   --tw-prose-bullets: #8c735d;
-  --tw-prose-hr: #d4c4a8;
-  --tw-prose-quotes: #433020;
-  --tw-prose-quote-borders: #d4c4a8;
+  --tw-prose-hr: #d6c7ab;
+  --tw-prose-quotes: #3d2b1f;
+  --tw-prose-quote-borders: #d6c7ab;
   --tw-prose-captions: #705b4a;
-  --tw-prose-th-borders: #d4c4a8;
-  --tw-prose-td-borders: #e5d8bc;
+  --tw-prose-th-borders: #d6c7ab;
+  --tw-prose-td-borders: #ebe0c8;
 }
 
 .prose-wrapper.prose-sepia :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code),
 .prose-sepia .markdown-body code:not(pre code):not(div code) {
-  background-color: #e5d8bc !important;
-  color: #433020 !important;
-  border: 1px solid #d4c4a8 !important;
+  background-color: rgba(61, 43, 31, 0.08) !important;
+  color: #3d2b1f !important;
+  border: 1px solid rgba(61, 43, 31, 0.15) !important;
 }
 
 .prose-wrapper.prose-sepia :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) *,
 .prose-sepia .markdown-body code:not(pre code):not(div code) * {
-  color: #433020 !important;
+  color: #3d2b1f !important;
 }
 
 /* --- ChatGPT Theme --- */
@@ -323,19 +355,19 @@ body {
   --tw-prose-bold: #ffffff;
   --tw-prose-counters: #ececf1;
   --tw-prose-bullets: #ececf1;
-  --tw-prose-hr: #565869;
+  --tw-prose-hr: #424242;
   --tw-prose-quotes: #ececf1;
-  --tw-prose-quote-borders: #565869;
+  --tw-prose-quote-borders: #424242;
   --tw-prose-captions: #c5c5d2;
-  --tw-prose-th-borders: #565869;
-  --tw-prose-td-borders: #343541;
+  --tw-prose-th-borders: #424242;
+  --tw-prose-td-borders: #2f2f2f;
 }
 
 .prose-wrapper.prose-chatgpt :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code),
 .prose-chatgpt .markdown-body code:not(pre code):not(div code) {
-  background-color: #343541 !important;
+  background-color: rgba(16, 163, 127, 0.1) !important;
   color: #10a37f !important;
-  border: 1px solid #565869 !important;
+  border: 1px solid rgba(16, 163, 127, 0.2) !important;
 }
 
 .prose-wrapper.prose-chatgpt :is(p, li, h1, h2, h3, h4, h5, h6, td, th) > code:not(pre code) *,

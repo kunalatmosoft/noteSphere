@@ -7,8 +7,8 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useReaderStore } from '../store/useReaderStore.js'
 import { 
   Heart, Download, FileDown, ArrowUp, ArrowDown, 
-  Menu, X, Settings, Sun, Moon, Coffee, Bot, Maximize, Minimize,
-  Share2, Check, BookOpen, Compass, PanelRightClose, PanelRight
+  Settings, Sun, Moon, Coffee, Bot, Maximize, Minimize,
+  Share2, Check, BookOpen, List, X, ChevronRight, Type
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -18,6 +18,7 @@ export default function PostView() {
   
   const [copiedLink, setCopiedLink] = useState(false)
   const [isUiVisible, setIsUiVisible] = useState(true)
+  const [activeHeading, setActiveHeading] = useState('')
   const inactivityTimerRef = useRef(null)
 
   // Zustand Store
@@ -32,20 +33,20 @@ export default function PostView() {
     isFocusMode, setFocusMode
   } = useReaderStore()
 
-  // 30-Second Inactivity Auto-Hide Timer
+  // Auto-Hide Timer for Floating Dock
   useEffect(() => {
     const handleActivity = () => {
       setIsUiVisible(true)
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
       inactivityTimerRef.current = setTimeout(() => {
         if (!isSettingsOpen) setIsUiVisible(false)
-      }, 30000)
+      }, 15000)
     }
 
     const events = ['mousemove', 'mousedown', 'touchstart', 'scroll', 'keydown']
     events.forEach(event => window.addEventListener(event, handleActivity))
 
-    inactivityTimerRef.current = setTimeout(() => setIsUiVisible(false), 30000)
+    inactivityTimerRef.current = setTimeout(() => setIsUiVisible(false), 35000)
 
     return () => {
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
@@ -69,7 +70,7 @@ export default function PostView() {
             .filter((line) => /^#{1,6}\s/.test(line))
             .map((line) => {
               const level = line.match(/^#+/)[0].length
-              const text = line.replace(/^#+\s/, '')
+              const text = line.replace(/^#+\s/, '').trim()
               return { level, text }
             })
           setTableOfContents(headings)
@@ -78,7 +79,27 @@ export default function PostView() {
     })()
   }, [postId, user, setPost, setLiked, setTableOfContents])
 
-  // Sync Fullscreen Exit
+  // Advanced Scrollspy for Table of Contents
+  useEffect(() => {
+    if (!post || tableOfContents.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries.filter(e => e.isIntersecting)
+        if (visibleEntries.length > 0) {
+          setActiveHeading(visibleEntries[0].target.textContent.trim())
+        }
+      },
+      { rootMargin: '-10% 0px -80% 0px', threshold: 0.1 }
+    )
+
+    const headingElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6')
+    headingElements.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [post, tableOfContents])
+
+  // Fullscreen Handlers
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) setFocusMode(false)
@@ -125,9 +146,10 @@ export default function PostView() {
     const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'))
     const target = elements.find(el => el.textContent.trim().includes(text.trim()))
     if (target) {
-      const yOffset = -80
-      const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset
+      const yOffset = -90
+      const y = target.getBoundingClientRect().top + window.scrollY + yOffset
       window.scrollTo({ top: y, behavior: 'smooth' })
+      setActiveHeading(text)
     }
   }
 
@@ -136,9 +158,9 @@ export default function PostView() {
 
   if (!post) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#0b0f17] text-slate-400">
-        <div className="flex items-center gap-3 animate-pulse text-sm font-medium">
-          <BookOpen className="animate-spin text-blue-500" size={20} />
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#09090b] text-zinc-400">
+        <div className="flex items-center gap-3 animate-pulse text-sm font-semibold tracking-wide">
+          <BookOpen className="animate-spin text-emerald-500" size={20} />
           Loading document...
         </div>
       </div>
@@ -147,39 +169,58 @@ export default function PostView() {
 
   const date = post.createdAt?.toDate ? format(post.createdAt.toDate(), 'MMMM d, yyyy') : ''
 
-  // Consistent Theme Color Palettes (Applied universally across whole canvas)
+  // Expanded Premium Typography
+  const fontOptions = [
+    { label: 'System', class: 'font-sans' },
+    { label: 'Inter', class: 'font-["Inter",_sans-serif]' },
+    { label: 'Roboto', class: 'font-["Roboto",_sans-serif]' },
+    { label: 'Article', class: 'font-serif' },
+    { label: 'Georgia', class: 'font-["Georgia",_serif]' },
+    { label: 'Fira Code', class: 'font-["Fira_Code",_monospace]' },
+    { label: 'Mono', class: 'font-mono' },
+  ]
+
+  // Ultra-modern color palettes with exact aesthetic mirroring your screenshot
   const themes = {
     light: {
-      app: 'bg-[#fafafa] text-slate-900',
-      panel: 'bg-white/95 backdrop-blur-md border-slate-200 shadow-xl',
-      badge: 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200',
-      textMuted: 'text-slate-500 hover:text-slate-900',
-      btnActive: 'bg-blue-600 text-white shadow-sm',
-      btnInactive: 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200/80',
+      app: 'bg-[#fcfcfc] text-zinc-900',
+      panel: 'bg-white/80 backdrop-blur-3xl ring-1 ring-zinc-200 shadow-2xl shadow-zinc-200/50',
+      badge: 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 ring-1 ring-zinc-200',
+      textMuted: 'text-zinc-500',
+      btnActive: 'bg-zinc-900 text-white shadow-md font-bold',
+      btnInactive: 'bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 ring-1 ring-zinc-200 shadow-sm transition-all',
+      tocActive: 'border-zinc-900 bg-zinc-900/5 text-zinc-900 font-semibold',
+      tocInactive: 'border-transparent text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50'
     },
     dark: {
-      app: 'bg-[#0b0f17] text-slate-100',
-      panel: 'bg-[#111726]/95 backdrop-blur-md border-slate-800 shadow-2xl',
-      badge: 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 border-slate-700/60',
-      textMuted: 'text-slate-400 hover:text-slate-100',
-      btnActive: 'bg-blue-600 text-white shadow-sm',
-      btnInactive: 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 border-slate-700/60',
+      app: 'bg-[#09090b] text-zinc-200',
+      panel: 'bg-[#18181b]/80 backdrop-blur-3xl ring-1 ring-white/10 shadow-2xl shadow-black/80',
+      badge: 'bg-zinc-800/50 text-zinc-300 ring-1 ring-white/10',
+      textMuted: 'text-zinc-500',
+      btnActive: 'bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/50 shadow-md font-bold',
+      btnInactive: 'bg-zinc-800/40 text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200 ring-1 ring-white/10 transition-all',
+      tocActive: 'border-emerald-500 bg-emerald-500/10 text-emerald-400 font-semibold',
+      tocInactive: 'border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
     },
     sepia: {
-      app: 'bg-[#f6f0e2] text-[#433020]',
-      panel: 'bg-[#ede3ce]/95 backdrop-blur-md border-[#dfd2ba] shadow-xl',
-      badge: 'bg-[#e5d8bc] text-[#5b4636] hover:bg-[#dcd0b1] border-[#dfd2ba]',
-      textMuted: 'text-[#7d6653] hover:text-[#433020]',
-      btnActive: 'bg-[#8c735d] text-white shadow-sm',
-      btnInactive: 'bg-[#e5d8bc] text-[#5b4636] hover:bg-[#dcd0b1] border-[#dfd2ba]',
+      app: 'bg-[#f4ebd8] text-[#3d2b1f]',
+      panel: 'bg-[#ebe0c8]/80 backdrop-blur-3xl ring-1 ring-[#d6c7ab] shadow-2xl shadow-[#d6c7ab]/40',
+      badge: 'bg-[#e3d5bb]/50 text-[#5c4632] ring-1 ring-[#d6c7ab]',
+      textMuted: 'text-[#826a54]',
+      btnActive: 'bg-[#3d2b1f] text-[#f4ebd8] font-bold shadow-md',
+      btnInactive: 'bg-[#ebe0c8]/50 text-[#5c4632] hover:bg-[#e3d5bb] hover:text-[#3d2b1f] ring-1 ring-[#d6c7ab] shadow-sm transition-all',
+      tocActive: 'border-[#3d2b1f] bg-[#3d2b1f]/5 text-[#3d2b1f] font-semibold',
+      tocInactive: 'border-transparent text-[#826a54] hover:text-[#3d2b1f] hover:bg-[#3d2b1f]/5'
     },
     chatgpt: {
-      app: 'bg-[#18181b] text-[#ececf1]',
-      panel: 'bg-[#232328]/95 backdrop-blur-md border-[#383842] shadow-2xl',
-      badge: 'bg-[#2a2b32] text-[#d1d5db] hover:bg-[#343541] border-[#3e3f4b]',
-      textMuted: 'text-[#9ca3af] hover:text-white',
-      btnActive: 'bg-[#10a37f] text-white shadow-sm',
-      btnInactive: 'bg-[#2a2b32] text-[#d1d5db] hover:bg-[#343541] border-[#3e3f4b]',
+      app: 'bg-[#212121] text-[#ececf1]',
+      panel: 'bg-[#2f2f2f]/80 backdrop-blur-3xl ring-1 ring-[#424242] shadow-2xl shadow-black/60',
+      badge: 'bg-[#424242]/50 text-[#d1d5db] ring-1 ring-[#424242]',
+      textMuted: 'text-[#9ca3af]',
+      btnActive: 'bg-[#10a37f]/10 text-[#10a37f] ring-1 ring-[#10a37f]/50 font-bold shadow-md',
+      btnInactive: 'bg-[#2f2f2f]/50 text-[#d1d5db] hover:bg-[#424242] hover:text-white ring-1 ring-[#424242] shadow-sm transition-all',
+      tocActive: 'border-[#10a37f] bg-[#10a37f]/10 text-[#10a37f] font-semibold',
+      tocInactive: 'border-transparent text-[#9ca3af] hover:text-white hover:bg-white/5'
     }
   }
 
@@ -193,97 +234,100 @@ export default function PostView() {
   }
 
   return (
-    <div className={`min-h-screen w-full transition-colors duration-300 ${activeTheme.app} ${fontFamily} antialiased selection:bg-blue-500/20`}>
+    <div className={`min-h-screen w-full transition-colors duration-500 ease-out ${activeTheme.app} ${fontFamily} antialiased selection:bg-emerald-500/30`}>
       
-      {/* Floating Top Nav (Auto-hides after 30s) */}
-
-
-      {/* Main Grid Wrapper */}
-      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-16 lg:py-20">
-        <div className="flex justify-center items-start gap-8 lg:gap-12 w-full">
+      {/* 
+        MAIN GRID WRAPPER 
+        Using items-start on the wrapper ensures child elements do not stretch automatically, 
+        giving the sticky sidebar the perfect track to slide on.
+      */}
+      <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-10 lg:py-16">
+        <div className="flex items-start justify-center gap-10 xl:gap-16 relative w-full">
           
-          {/* Main Reading Canvas */}
+          {/* Central Reading Canvas */}
           <main 
-            className={`w-full min-w-0 transition-all duration-300 ${
+            className={`flex-1 min-w-0 transition-all duration-500 ease-in-out ${
               isFocusMode 
-                ? 'max-w-4xl mx-auto' 
+                ? 'max-w-3xl mx-auto' 
                 : isSidebarOpen && tableOfContents.length > 0
                   ? 'max-w-3xl xl:max-w-4xl' 
-                  : 'max-w-4xl xl:max-w-5xl mx-auto'
+                  : 'max-w-4xl mx-auto'
             }`}
           >
             {!isFocusMode && (
-              <header className="mb-10 pb-8 border-b border-current/10 w-full">
+              <header className="mb-14 pb-12 border-b border-current/10 w-full">
                 {post.cover && (
-                  <div className="overflow-hidden rounded-2xl mb-8 border border-white/10 shadow-lg w-full">
+                  <div className="overflow-hidden rounded-3xl mb-12 shadow-2xl w-full ring-1 ring-white/10">
                     <img 
                       src={post.cover} 
-                      className="w-full max-h-[420px] object-cover hover:scale-105 transition-transform duration-700" 
+                      className="w-full max-h-[500px] object-cover hover:scale-[1.02] transition-transform duration-700 ease-out" 
                       alt="Cover" 
                     />
                   </div>
                 )}
 
-                <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="flex flex-wrap items-center gap-2 mb-6">
                   {(post.tags || []).map((t) => (
                     <Link 
                       key={t} 
                       to={`/search?tag=${t}`} 
-                      className={`text-xs font-semibold px-3 py-1 rounded-md transition-colors border ${activeTheme.badge}`}
+                      className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all backdrop-blur-sm ${activeTheme.badge}`}
                     >
                       #{t}
                     </Link>
                   ))}
                 </div>
                 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.2] mb-6">
+                <h1 className="text-4xl sm:text-5xl lg:text-[4rem] font-black tracking-tight leading-[1.1] mb-8">
                   {post.title}
                 </h1>
                 
-                <div className="flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-500 font-bold flex items-center justify-center uppercase">
+                <div className="flex flex-wrap items-center justify-between gap-5 text-sm">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white font-bold flex items-center justify-center uppercase shadow-lg ring-2 ring-white/10">
                       {post.authorName?.[0] || 'A'}
                     </div>
-                    <div>
-                      <Link to={`/u/${post.authorUsername}`} className="font-semibold hover:underline">
+                    <div className="flex flex-col">
+                      <Link to={`/u/${post.authorUsername}`} className="font-semibold hover:underline text-base">
                         {post.authorName}
                       </Link>
-                      <p className={`text-xs opacity-60 ${activeTheme.textMuted}`}>{date}</p>
+                      <span className={`text-xs mt-0.5 tracking-wide ${activeTheme.textMuted}`}>{date}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button 
                       onClick={handleLike} 
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${liked ? 'text-red-500 border-red-500/30 bg-red-500/10' : activeTheme.btnInactive}`}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold tracking-wider transition-all ${liked ? 'text-rose-500 ring-1 ring-rose-500/50 bg-rose-500/10' : activeTheme.btnInactive}`}
                     >
-                      <Heart size={14} fill={liked ? 'currentColor' : 'none'} className={liked ? 'scale-110' : ''} /> 
+                      <Heart size={16} fill={liked ? 'currentColor' : 'none'} className={liked ? 'scale-110 transition-transform' : 'transition-transform'} /> 
                       <span>{post.likeCount || 0}</span>
                     </button>
 
                     <button 
                       onClick={handleShare} 
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${activeTheme.btnInactive}`}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold tracking-wider transition-all ${activeTheme.btnInactive}`}
                     >
-                      {copiedLink ? <Check size={14} className="text-emerald-500" /> : <Share2 size={14} />}
+                      {copiedLink ? <Check size={16} className="text-emerald-500" /> : <Share2 size={16} />}
                       <span>{copiedLink ? 'Copied' : 'Share'}</span>
                     </button>
 
+                    <div className="h-8 w-px bg-current/10 mx-1"></div>
+
                     <button 
                       onClick={() => downloadMarkdown(post.title, post.content)} 
-                      className={`p-2 rounded-lg border transition-all ${activeTheme.btnInactive}`}
+                      className={`p-3 rounded-2xl transition-all ${activeTheme.btnInactive}`}
                       title="Download Markdown"
                     >
-                      <Download size={14} />
+                      <Download size={16} />
                     </button>
 
                     <button 
                       onClick={() => downloadPDF('post-content', post.title)} 
-                      className={`p-2 rounded-lg border transition-all ${activeTheme.btnInactive}`}
+                      className={`p-3 rounded-2xl transition-all ${activeTheme.btnInactive}`}
                       title="Export PDF"
                     >
-                      <FileDown size={14} />
+                      <FileDown size={16} />
                     </button>
                   </div>
                 </div>
@@ -291,51 +335,62 @@ export default function PostView() {
             )}
 
             {isFocusMode && (
-              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-12 text-center">
+              <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-20 text-center leading-tight">
                 {post.title}
               </h1>
             )}
             
-            {/* Markdown Body */}
-            <div className={`prose-wrapper w-full max-w-none transition-colors duration-300 ${getProseClass()}`}>
+            {/* Markdown Body Component */}
+            <div className={`prose-wrapper w-full max-w-none transition-colors duration-500 ${getProseClass()}`}>
               <MarkdownRenderer id="post-content" content={post.content} />
             </div>
           </main>
 
-          {/* Desktop Right Outline (TOC) */}
+          {/* 
+            TRUE STICKY RIGHT SIDEBAR
+            - `sticky top-10`: Anchors it dynamically to viewport.
+            - `h-[calc(100vh-5rem)]`: Locks the height exactly to screen bounds so it NEVER stretches.
+            Note: If it still breaks, check if your <App> or <body> has `overflow-x: hidden`. 
+          */}
           {!isFocusMode && tableOfContents.length > 0 && isSidebarOpen && (
-            <aside className="hidden lg:block w-72 shrink-0">
-              <div className={`sticky top-20 p-5 rounded-2xl border ${activeTheme.panel}`}>
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-current/10">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider opacity-75">
-                    <Compass size={14} />
+            <aside className="hidden lg:block w-72 xl:w-80 shrink-0 sticky top-10 h-[calc(100vh-5rem)] z-10 transition-opacity duration-300">
+              <div className={`flex flex-col h-full rounded-[2rem] overflow-hidden ${activeTheme.panel}`}>
+                
+                {/* TOC Header */}
+                <div className="flex items-center justify-between p-5 pb-4 border-b border-current/10 shrink-0">
+                  <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] opacity-80">
+                    <List size={14} className="text-current opacity-60" />
                     <span>Contents</span>
                   </div>
                   <button 
                     onClick={() => setSidebarOpen(false)}
-                    className="opacity-50 hover:opacity-100 transition-opacity p-1 rounded-md"
-                    title="Close Sidebar"
+                    className="p-1.5 rounded-xl opacity-40 hover:opacity-100 hover:bg-current/10 transition-all"
+                    title="Hide Outline"
                   >
-                    <X size={14} />
+                    <X size={16} />
                   </button>
                 </div>
                 
-                <nav className="max-h-[calc(100vh-220px)] overflow-y-auto space-y-1.5 pr-1 text-xs">
-                  {tableOfContents.map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => scrollToHeading(item.text)}
-                      style={{ paddingLeft: `${(item.level - 1) * 0.65}rem` }}
-                      className={`block text-left w-full truncate py-1 px-1.5 rounded transition-colors ${
-                        item.level === 1 
-                          ? 'font-semibold text-current opacity-90 hover:bg-current/5' 
-                          : 'opacity-65 hover:opacity-100 hover:text-blue-500 hover:bg-current/5'
-                      }`}
-                      title={item.text}
-                    >
-                      {item.text}
-                    </button>
-                  ))}
+                {/* Independently Scrollable Headings */}
+                <nav className="flex-1 overflow-y-auto p-4 space-y-1.5 text-[13px] scrollbar-thin scrollbar-thumb-zinc-700/50 scrollbar-track-transparent">
+                  {tableOfContents.map((item, idx) => {
+                    const isActive = activeHeading.toLowerCase().includes(item.text.toLowerCase()) || 
+                                     item.text.toLowerCase().includes(activeHeading.toLowerCase())
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => scrollToHeading(item.text)}
+                        style={{ paddingLeft: `${(item.level - 1) * 0.85 + 0.5}rem` }}
+                        className={`group flex items-center justify-between w-full text-left py-2.5 pr-3 rounded-xl border-l-[3px] transition-all duration-300 ${
+                          isActive ? activeTheme.tocActive : activeTheme.tocInactive
+                        }`}
+                        title={item.text}
+                      >
+                        <span className="truncate leading-relaxed">{item.text}</span>
+                        {isActive && <ChevronRight size={14} className="shrink-0 opacity-100 ml-2" />}
+                      </button>
+                    )
+                  })}
                 </nav>
               </div>
             </aside>
@@ -344,148 +399,165 @@ export default function PostView() {
         </div>
       </div>
 
-      {/* Mobile TOC Drawer */}
+      {/* Mobile Drawer Overlay */}
       <div 
-        className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-md z-50 transition-opacity duration-500 lg:hidden ${
           isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`} 
         onClick={() => setSidebarOpen(false)} 
       />
       
+      {/* Mobile Drawer Panel */}
       <div 
-        className={`fixed right-0 top-0 h-full w-80 border-l z-50 transform transition-transform duration-300 ease-out lg:hidden ${
+        className={`fixed right-0 top-0 h-full w-[85vw] sm:w-96 ring-1 ring-white/10 z-50 transform transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:hidden flex flex-col ${
           activeTheme.panel
         } ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="p-5 flex items-center justify-between border-b border-current/10">
-          <div className="flex items-center gap-2 font-bold text-sm">
-            <Compass size={16} />
-            <span>Table of Contents</span>
+        <div className="p-6 flex items-center justify-between border-b border-current/10 shrink-0">
+          <div className="flex items-center gap-3 font-bold text-xs tracking-[0.2em] uppercase opacity-80">
+            <List size={16} />
+            <span>Contents</span>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className={`rounded-lg p-1.5 transition-colors ${activeTheme.btnInactive}`}>
-            <X size={16} />
+          <button 
+            onClick={() => setSidebarOpen(false)} 
+            className={`rounded-2xl p-2.5 transition-colors ${activeTheme.btnInactive}`}
+          >
+            <X size={18} />
           </button>
         </div>
         
-        <div className="p-5 overflow-y-auto max-h-[calc(100vh-80px)] space-y-2">
+        <div className="p-4 overflow-y-auto flex-1 space-y-1.5 custom-scrollbar">
           {tableOfContents.length > 0 ? (
-            tableOfContents.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  scrollToHeading(item.text)
-                  setSidebarOpen(false)
-                }}
-                style={{ paddingLeft: `${(item.level - 1) * 0.8}rem` }}
-                className={`block w-full text-left text-xs py-1.5 transition-colors leading-relaxed font-medium ${activeTheme.textMuted}`}
-              >
-                {item.text}
-              </button>
-            ))
+            tableOfContents.map((item, index) => {
+              const isActive = activeHeading.toLowerCase().includes(item.text.toLowerCase())
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    scrollToHeading(item.text)
+                    setSidebarOpen(false)
+                  }}
+                  style={{ paddingLeft: `${(item.level - 1) * 0.85 + 0.5}rem` }}
+                  className={`block w-full text-left text-[13px] py-3 pr-3 rounded-xl border-l-[3px] transition-all duration-300 ${
+                    isActive ? activeTheme.tocActive : activeTheme.tocInactive
+                  }`}
+                >
+                  <span className="truncate block">{item.text}</span>
+                </button>
+              )
+            })
           ) : (
-            <p className="opacity-50 text-xs italic">No headings indexed.</p>
+            <p className="opacity-50 text-xs italic p-4 text-center">No headings found.</p>
           )}
         </div>
       </div>
 
-      {/* Floating Bottom Dock */}
+      {/* Modern Floating Action Dock */}
       <div 
-        className={`fixed bottom-6 right-6 z-40 flex items-center gap-1.5 p-1.5 rounded-2xl shadow-2xl border transition-all duration-500 ease-in-out ${
-          isUiVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8 pointer-events-none'
-        } bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur-xl border-white/10 text-white`}
+        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2.5 p-2.5 rounded-full shadow-2xl ring-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isUiVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'
+        } bg-[#18181b]/95 backdrop-blur-3xl ring-white/10 text-zinc-300`}
       >
+        
+        {/* Settings Popover Panel */}
         <div 
-          className={`absolute bottom-full right-0 mb-3 p-4 rounded-2xl shadow-2xl border w-[260px] transition-all duration-200 origin-bottom-right ${
+          className={`absolute bottom-[calc(100%+20px)] left-1/2 -translate-x-1/2 p-6 rounded-[2rem] shadow-2xl w-[340px] transition-all duration-300 origin-bottom ${
             activeTheme.panel
-          } ${isSettingsOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-90 opacity-0 pointer-events-none'}`}
+          } ${isSettingsOpen ? 'scale-100 opacity-250 pointer-events-auto' : 'scale-95 opacity-0 pointer-events-none'}`}
         >
-          <h4 className={`text-[10px] font-bold uppercase tracking-wider mb-2.5 ${activeTheme.textMuted}`}>Theme</h4>
-          <div className="grid grid-cols-4 gap-1.5 mb-4">
-            {[ 
-              { mode: 'light', icon: Sun, label: 'Light' }, 
-              { mode: 'dark', icon: Moon, label: 'Dark' }, 
-              { mode: 'sepia', icon: Coffee, label: 'Sepia' }, 
-              { mode: 'chatgpt', icon: Bot, label: 'AI' }
-            ].map(({ mode, icon: Icon, label }) => (
-              <button 
-                key={mode}
-                onClick={() => setReadMode(mode)} 
-                className={`p-2 rounded-lg flex flex-col items-center gap-1 transition-all border text-[10px] font-medium ${
-                  readMode === mode ? activeTheme.btnActive : activeTheme.btnInactive
-                }`} 
-                title={label}
-              >
-                <Icon size={15} />
-                <span>{label}</span>
-              </button>
-            ))}
+          {/* Theme Section */}
+          <div className="mb-6">
+            <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${activeTheme.textMuted}`}>
+              <Sun size={12} /> Theme Selection
+            </h4>
+            <div className="grid grid-cols-4 gap-2">
+              {[ 
+                { mode: 'light', label: 'Light' }, 
+                { mode: 'dark', label: 'Dark' }, 
+                { mode: 'sepia', label: 'Sepia' }, 
+                { mode: 'chatgpt', label: 'AI' }
+              ].map(({ mode, label }) => (
+                <button 
+                  key={mode}
+                  onClick={() => setReadMode(mode)} 
+                  className={`py-2.5 rounded-2xl text-[11px] font-semibold transition-all ${
+                    readMode === mode ? activeTheme.btnActive : activeTheme.btnInactive
+                  }`} 
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <h4 className={`text-[10px] font-bold uppercase tracking-wider mb-2.5 ${activeTheme.textMuted}`}>Font</h4>
-          <div className="grid grid-cols-3 gap-1.5 mb-4">
-            {[
-              { style: 'font-sans', label: 'Sans' },
-              { style: 'font-serif', label: 'Serif' },
-              { style: 'font-mono', label: 'Mono' }
-            ].map(({ style, label }) => (
-              <button 
-                key={style}
-                onClick={() => setFontFamily(style)}
-                className={`py-1.5 rounded-lg text-xs font-semibold transition-all border ${style} ${
-                  fontFamily === style ? activeTheme.btnActive : activeTheme.btnInactive
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+          {/* Extended Typography Section */}
+          <div className="mb-6">
+            <h4 className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-2 ${activeTheme.textMuted}`}>
+              <Type size={12} /> Typography
+            </h4>
+            <div className="grid grid-cols-3 gap-2">
+              {fontOptions.map(({ label, class: fontClass }) => (
+                <button 
+                  key={label}
+                  onClick={() => setFontFamily(fontClass)} 
+                  className={`py-2.5 rounded-2xl text-[11px] font-medium transition-all ${fontClass} ${
+                    fontFamily === fontClass ? activeTheme.btnActive : activeTheme.btnInactive
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
+          {/* Focus Mode Toggle */}
           <button 
             onClick={toggleFocusMode}
-            className={`w-full py-2 rounded-lg flex items-center justify-center gap-2 font-bold text-xs transition-all border ${
+            className={`w-full py-3 rounded-2xl flex items-center justify-center gap-2.5 font-bold text-xs tracking-wider transition-all ${
               isFocusMode ? activeTheme.btnActive : activeTheme.btnInactive
             }`}
           >
-            {isFocusMode ? <><Minimize size={14} /> Exit Zen Mode</> : <><Maximize size={14} /> Zen Mode</>}
+            {isFocusMode ? <><Minimize size={16} /> Exit Zen Mode</> : <><Maximize size={16} /> Zen Mode</>}
           </button>
         </div>
 
+        {/* Dock Buttons */}
         <button 
           onClick={scrollToTop} 
-          className="p-2.5 rounded-xl hover:bg-white/10 transition-colors text-slate-300 hover:text-white" 
+          className="p-3.5 rounded-full hover:bg-white/10 transition-colors text-zinc-400 hover:text-white group" 
           title="Scroll to Top"
         >
-          <ArrowUp size={17} />
+          <ArrowUp size={18} className="group-hover:-translate-y-0.5 transition-transform" />
         </button>
 
         {tableOfContents.length > 0 && (
           <button 
             onClick={toggleSidebar} 
-            className={`p-2.5 rounded-xl transition-all ${
-              isSidebarOpen ? 'bg-blue-600 text-white' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+            className={`p-3.5 rounded-full transition-all ${
+              isSidebarOpen ? 'bg-white text-zinc-900 shadow-lg shadow-white/20' : 'hover:bg-white/10 text-zinc-400 hover:text-white'
             }`}
             title="Toggle Outline"
           >
-            <Menu size={17} />
+            <List size={18} />
           </button>
         )}
 
         <button 
           onClick={toggleSettings} 
-          className={`p-2.5 rounded-xl transition-all ${
-            isSettingsOpen ? 'bg-blue-600 text-white' : 'hover:bg-white/10 text-slate-300 hover:text-white'
+          className={`p-3.5 rounded-full transition-all ${
+            isSettingsOpen ? 'bg-white text-zinc-900 shadow-lg shadow-white/20' : 'hover:bg-white/10 text-zinc-400 hover:text-white'
           }`}
           title="Reading Settings"
         >
-          <Settings size={17} />
+          <Settings size={18} className={isSettingsOpen ? 'rotate-90 transition-transform duration-500' : 'transition-transform duration-500'} />
         </button>
 
         <button 
           onClick={scrollToBottom} 
-          className="p-2.5 rounded-xl hover:bg-white/10 transition-colors text-slate-300 hover:text-white" 
+          className="p-3.5 rounded-full hover:bg-white/10 transition-colors text-zinc-400 hover:text-white group" 
           title="Scroll to Bottom"
         >
-          <ArrowDown size={17} />
+          <ArrowDown size={18} className="group-hover:translate-y-0.5 transition-transform" />
         </button>
       </div>
 
