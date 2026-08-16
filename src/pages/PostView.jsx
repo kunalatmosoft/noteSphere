@@ -34,7 +34,7 @@ export default function PostView() {
   } = useReaderStore()
 
   // Auto-Hide Timer for Floating Dock
-  useEffect(() => {
+/*   useEffect(() => {
     const handleActivity = () => {
       setIsUiVisible(true)
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
@@ -52,7 +52,7 @@ export default function PostView() {
       if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
       events.forEach(event => window.removeEventListener(event, handleActivity))
     }
-  }, [isSettingsOpen])
+  }, [isSettingsOpen]) */
 
   // Fetch Post & Parse Headings
   useEffect(() => {
