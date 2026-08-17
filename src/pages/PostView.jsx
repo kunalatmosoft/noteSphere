@@ -9,42 +9,13 @@ import {
   Heart, Download, FileDown, ArrowUp, ArrowDown, 
   Settings, Sun, Moon, Coffee, Sparkles, Maximize, Minimize,
   Share2, Check, BookOpen, List, X, ChevronRight, ChevronDown, 
-  Type, ZoomIn, ZoomOut, MoveHorizontal, AlertCircle, RefreshCw,
-  Keyboard, Copy
+  Type, ZoomIn, ZoomOut, AlertCircle, RefreshCw,
+  Keyboard
 } from 'lucide-react'
 import { format } from 'date-fns'
 
 // High-speed In-Memory Cache (Zero-latency instant navigation)
 const postMemoryCache = new Map()
-
-// Synthesized Micro-Haptic Audio Engine (0 external assets required)
-const playFeedback = (type = 'click') => {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    
-    if (type === 'click') {
-      osc.frequency.setValueAtTime(800, ctx.currentTime)
-      osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.04)
-      gain.gain.setValueAtTime(0.04, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04)
-      osc.start()
-      osc.stop(ctx.currentTime + 0.04)
-    } else if (type === 'toggle') {
-      osc.frequency.setValueAtTime(520, ctx.currentTime)
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.06)
-      gain.gain.setValueAtTime(0.05, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06)
-      osc.start()
-      osc.stop(ctx.currentTime + 0.06)
-    }
-  } catch {
-    // AudioContext blocked or unsupported
-  }
-}
 
 export default function PostView() {
   const { postId } = useParams()
@@ -54,12 +25,11 @@ export default function PostView() {
   const [copiedLink, setCopiedLink] = useState(false)
   const [activeHeading, setActiveHeading] = useState('')
   const [isFontDropdownOpen, setIsFontDropdownOpen] = useState(false)
-  const [fontSizeOffset, setFontSizeOffset] = useState(0) // -2 to +4 scale
-  const [contentWidth, setContentWidth] = useState('standard') // 'compact' | 'standard' | 'expanded'
+  const [fontSizeOffset, setFontSizeOffset] = useState(0)
+  const [contentWidth, setContentWidth] = useState('standard')
   const [fetchError, setFetchError] = useState(null)
   const [isLoading, setIsLoading] = useState(!postMemoryCache.has(postId))
   const [toastMessage, setToastMessage] = useState('')
-  const [soundEnabled, setSoundEnabled] = useState(true)
   const [showKeymap, setShowKeymap] = useState(false)
 
   const settingsPanelRef = useRef(null)
@@ -83,11 +53,7 @@ export default function PostView() {
     toastTimeoutRef.current = setTimeout(() => setToastMessage(''), 2400)
   }, [])
 
-  const triggerSound = useCallback((type) => {
-    if (soundEnabled) playFeedback(type)
-  }, [soundEnabled])
-
-  // Optimized Instant-Hydration Data Fetching with SWR Architecture
+  // Instant-Hydration Data Fetching with SWR Architecture
   const loadPostData = useCallback(async (isBackgroundRevalidate = false) => {
     try {
       if (!isBackgroundRevalidate && !postMemoryCache.has(postId)) {
@@ -129,12 +95,11 @@ export default function PostView() {
   }, [postId, user, setPost, setLiked, setTableOfContents])
 
   useEffect(() => {
-    // Check in-memory cache for immediate paint
     if (postMemoryCache.has(postId)) {
       const cached = postMemoryCache.get(postId)
       setPost(cached)
       setIsLoading(false)
-      loadPostData(true) // Silent background revalidation
+      loadPostData(true)
     } else {
       loadPostData(false)
     }
@@ -154,7 +119,7 @@ export default function PostView() {
     return () => document.removeEventListener('mousedown', handleOutsideClick)
   }, [isSettingsOpen, setSettingsOpen])
 
-  // High-performance IntersectionObserver Scrollspy
+  // Scrollspy
   useEffect(() => {
     if (!post || tableOfContents.length === 0) return
 
@@ -185,7 +150,6 @@ export default function PostView() {
 
   // Fullscreen & Focus Mode Toggle
   const toggleFocusMode = useCallback(async () => {
-    triggerSound('toggle')
     try {
       if (!isFocusMode) {
         setFocusMode(true)
@@ -203,12 +167,11 @@ export default function PostView() {
     } catch {
       setFocusMode(!isFocusMode)
     }
-  }, [isFocusMode, setFocusMode, setSettingsOpen, setSidebarOpen, triggerSound])
+  }, [isFocusMode, setFocusMode, setSettingsOpen, setSidebarOpen])
 
-  // Futuristic Keyboard Shortcuts
+  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ignore if user is inside an input field
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return
 
       if (e.key === 'z' || e.key === 'Z') {
@@ -216,11 +179,9 @@ export default function PostView() {
         toggleFocusMode()
       } else if (e.key === 'o' || e.key === 'O') {
         e.preventDefault()
-        triggerSound('toggle')
         toggleSidebar()
       } else if (e.key === 's' || e.key === 'S') {
         e.preventDefault()
-        triggerSound('toggle')
         toggleSettings()
       } else if (e.key === '?' || e.key === '/') {
         e.preventDefault()
@@ -234,11 +195,10 @@ export default function PostView() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [toggleFocusMode, toggleSidebar, toggleSettings, setSettingsOpen, triggerSound])
+  }, [toggleFocusMode, toggleSidebar, toggleSettings, setSettingsOpen])
 
   const handleLike = async () => {
     if (!user || !post) return
-    triggerSound('click')
     const nextState = !liked
     setLiked(nextState)
     setPost({ ...post, likeCount: (post.likeCount || 0) + (nextState ? 1 : -1) })
@@ -246,7 +206,6 @@ export default function PostView() {
   }
 
   const handleShare = async () => {
-    triggerSound('click')
     try {
       await navigator.clipboard.writeText(window.location.href)
       setCopiedLink(true)
@@ -258,7 +217,6 @@ export default function PostView() {
   }
 
   const scrollToHeading = (text) => {
-    triggerSound('click')
     const targets = Array.from(document.querySelectorAll('h1, h2, h3, h4'))
     const match = targets.find(el => el.textContent.trim().toLowerCase().includes(text.toLowerCase()))
     if (match) {
@@ -268,32 +226,27 @@ export default function PostView() {
     }
   }
 
-  const scrollToTop = () => {
-    triggerSound('click')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+  const scrollToBottom = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
 
-  const scrollToBottom = () => {
-    triggerSound('click')
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })
-  }
-
-  // Curated Distinct High-Class Typography Engines
+  // Typography Settings
   const fontOptions = useMemo(() => [
-    { label: 'Inter UI', class: 'font-["Inter",_sans-serif]', category: 'Sans', spec: 'Standard Geometric Sans' },
-    { label: 'Outfit Pro', class: 'font-["Outfit",_sans-serif]', category: 'Display', spec: 'Futuristic Headline Type' },
-    { label: 'SF Pro / System', class: 'font-sans', category: 'Native', spec: 'Ultra-Clean OS Native' },
-    { label: 'Merriweather', class: 'font-["Merriweather",_serif]', category: 'Serif', spec: 'Editorial High-Legibility' },
-    { label: 'Playfair', class: 'font-["Playfair_Display",_serif]', category: 'Editorial', spec: 'High-Contrast Luxury Serif' },
-    { label: 'JetBrains Mono', class: 'font-["JetBrains_Mono",_monospace]', category: 'Code', spec: 'Optimized Developer Monospace' },
-    { label: 'Fira Code', class: 'font-["Fira_Code",_monospace]', category: 'Technical', spec: 'Ligature Monospace' },
+    { label: 'Inter', class: 'font-inter', category: 'Sans', preview: 'Universal screen-optimized sans' },
+    { label: 'Jakarta', class: 'font-jakarta', category: 'Sans', preview: 'Approachable contemporary sans' },
+    { label: 'Nunito', class: 'font-nunito', category: 'Sans', preview: 'Soft, rounded, low-fatigue sans' },
+    { label: 'Outfit', class: 'font-outfit', category: 'Display', preview: 'Sharp modern geometric display' },
+    { label: 'Merriweather', class: 'font-merriweather', category: 'Serif', preview: 'High-contrast long-form serif' },
+    { label: 'Lora', class: 'font-lora', category: 'Serif', preview: 'Calligraphic literary serif' },
+    { label: 'Newsreader', class: 'font-newsreader', category: 'Serif', preview: 'Editorial journal print serif' },
+    { label: 'Playfair', class: 'font-playfair', category: 'Serif', preview: 'Dramatic high-fashion serif' },
+    { label: 'JetBrains', class: 'font-jetbrains', category: 'Mono', preview: 'Engineered for developer reading' },
+    { label: 'Fira Code', class: 'font-fira', category: 'Mono', preview: 'Clean ligature-ready monospace' },
   ], [])
 
   const currentFontObj = useMemo(() => {
     return fontOptions.find(f => f.class === fontFamily) || fontOptions[0]
   }, [fontOptions, fontFamily])
 
-  // Precision Color Themes with High Visual Contrast & No Washed Blurs
   const themes = {
     light: {
       app: 'bg-[#fafafc] text-zinc-900',
@@ -359,7 +312,6 @@ export default function PostView() {
 
   const activeTheme = themes[readMode] || themes.dark
 
-  // Prose Theme Selector
   const getProseClass = () => {
     if (readMode === 'dark') return 'prose-invert'
     if (readMode === 'sepia') return 'prose-sepia'
@@ -367,7 +319,6 @@ export default function PostView() {
     return ''
   }
 
-  // Dynamic Layout Width Constraints
   const getWidthConstraint = () => {
     if (isFocusMode) return 'max-w-3xl mx-auto'
     if (contentWidth === 'compact') return 'max-w-2xl mx-auto'
@@ -375,7 +326,6 @@ export default function PostView() {
     return isSidebarOpen && tableOfContents.length > 0 ? 'max-w-3xl xl:max-w-4xl' : 'max-w-4xl mx-auto'
   }
 
-  // Error State Handler
   if (fetchError) {
     return (
       <div className={`min-h-screen w-full flex items-center justify-center p-6 ${activeTheme.app}`}>
@@ -417,16 +367,13 @@ export default function PostView() {
       style={{ fontSize: `${16 + fontSizeOffset}px` }}
       className={`min-h-screen w-full transition-colors duration-200 ${activeTheme.app} ${fontFamily} antialiased selection:bg-emerald-500/30`}
     >
-      
-      {/* Interactive Micro Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-zinc-950 text-white border border-zinc-800 text-xs font-medium shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-top-3 duration-200">
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-zinc-950 text-white border border-zinc-800 text-xs font-medium shadow-2xl flex items-center gap-2">
           <Check size={14} className="text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Keyboard Map Dialog Modal */}
       {showKeymap && (
         <div 
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
@@ -466,11 +413,8 @@ export default function PostView() {
         </div>
       )}
 
-      {/* Main Reading Container */}
       <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-10 lg:py-16">
         <div className="flex items-start justify-center gap-10 xl:gap-16 relative w-full">
-          
-          {/* Central Article Canvas */}
           <main className={`flex-1 min-w-0 transition-all duration-200 ${getWidthConstraint()}`}>
             {!isFocusMode && (
               <header className="mb-14 pb-12 border-b border-current/10 w-full">
@@ -538,7 +482,6 @@ export default function PostView() {
 
                     <button 
                       onClick={() => {
-                        triggerSound('click')
                         downloadMarkdown(post.title, post.content)
                         triggerToast('Markdown file generated')
                       }} 
@@ -550,7 +493,6 @@ export default function PostView() {
 
                     <button 
                       onClick={() => {
-                        triggerSound('click')
                         downloadPDF('post-content', post.title)
                         triggerToast('Exporting PDF document')
                       }} 
@@ -570,27 +512,21 @@ export default function PostView() {
               </h1>
             )}
             
-            {/* Markdown Body Engine */}
             <div className={`prose-wrapper w-full max-w-none transition-colors duration-200 ${getProseClass()}`}>
               <MarkdownRenderer id="post-content" content={post.content} />
             </div>
           </main>
 
-          {/* Sticky Table of Contents Sidebar */}
           {!isFocusMode && tableOfContents.length > 0 && isSidebarOpen && (
             <aside className="hidden lg:block w-72 xl:w-80 shrink-0 sticky top-10 h-[calc(100vh-5rem)] z-10">
               <div className={`flex flex-col h-full rounded-2xl overflow-hidden border ${activeTheme.panel}`}>
-                
                 <div className="flex items-center justify-between p-4 border-b border-current/10 shrink-0">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider opacity-80">
                     <List size={14} />
                     <span>Contents ({tableOfContents.length})</span>
                   </div>
                   <button 
-                    onClick={() => {
-                      triggerSound('click')
-                      setSidebarOpen(false)
-                    }}
+                    onClick={() => setSidebarOpen(false)}
                     className="p-1 rounded-lg opacity-50 hover:opacity-100 hover:bg-current/10 transition-all"
                     title="Hide Outline"
                   >
@@ -620,11 +556,10 @@ export default function PostView() {
               </div>
             </aside>
           )}
-
         </div>
       </div>
 
-      {/* Mobile Drawer Overlay */}
+      {/* Mobile Drawer */}
       <div 
         className={`fixed inset-0 bg-black/60 z-50 transition-opacity duration-200 lg:hidden ${
           isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -632,7 +567,6 @@ export default function PostView() {
         onClick={() => setSidebarOpen(false)} 
       />
       
-      {/* Mobile Drawer Panel */}
       <div 
         className={`fixed right-0 top-0 h-full w-[85vw] sm:w-88 z-50 transform transition-transform duration-200 ease-out lg:hidden flex flex-col border-l ${
           activeTheme.panel
@@ -673,18 +607,17 @@ export default function PostView() {
         </div>
       </div>
 
-      {/* Solid Futuristic Floating Action Dock */}
+      {/* Action Dock */}
       <div 
         ref={settingsPanelRef}
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
       >
-        {/* Settings Popover Panel */}
         <div 
           className={`absolute bottom-[calc(100%+12px)] left-1/2 -translate-x-1/2 p-5 rounded-2xl w-[330px] transition-all duration-200 origin-bottom border ${
             activeTheme.panel
           } ${isSettingsOpen ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-95 opacity-0 pointer-events-none'}`}
         >
-          {/* Theme Mode Selector */}
+          {/* Theme Palette */}
           <div className="mb-4">
             <h4 className={`text-[11px] font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${activeTheme.textMuted}`}>
               <Sun size={13} /> Theme Palette
@@ -698,10 +631,7 @@ export default function PostView() {
               ].map(({ mode, label, icon: Icon }) => (
                 <button 
                   key={mode}
-                  onClick={() => {
-                    triggerSound('click')
-                    setReadMode(mode)
-                  }} 
+                  onClick={() => setReadMode(mode)} 
                   className={`py-2 px-1 rounded-xl text-xs flex flex-col items-center gap-1.5 transition-all ${
                     readMode === mode ? activeTheme.btnActive : activeTheme.btnInactive
                   }`} 
@@ -713,7 +643,7 @@ export default function PostView() {
             </div>
           </div>
 
-          {/* Typography Engine Dropdown */}
+          {/* Typography */}
           <div className="mb-4">
             <h4 className={`text-[11px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5 ${activeTheme.textMuted}`}>
               <Type size={13} /> Typography
@@ -722,10 +652,7 @@ export default function PostView() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => {
-                  triggerSound('click')
-                  setIsFontDropdownOpen(!isFontDropdownOpen)
-                }}
+                onClick={() => setIsFontDropdownOpen(!isFontDropdownOpen)}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium border border-current/15 ${activeTheme.btnInactive}`}
               >
                 <div className="flex items-center gap-2">
@@ -746,7 +673,6 @@ export default function PostView() {
                         key={font.label}
                         type="button"
                         onClick={() => {
-                          triggerSound('click')
                           setFontFamily(font.class)
                           setIsFontDropdownOpen(false)
                         }}
@@ -770,7 +696,7 @@ export default function PostView() {
             </div>
           </div>
 
-          {/* Reading Scale & Viewport Width Controls */}
+          {/* Size & Width */}
           <div className="mb-4 grid grid-cols-2 gap-2">
             <div>
               <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${activeTheme.textMuted}`}>
@@ -778,10 +704,7 @@ export default function PostView() {
               </span>
               <div className="flex items-center gap-1">
                 <button 
-                  onClick={() => {
-                    triggerSound('click')
-                    setFontSizeOffset(prev => Math.max(-2, prev - 1))
-                  }}
+                  onClick={() => setFontSizeOffset(prev => Math.max(-2, prev - 1))}
                   className={`flex-1 py-1.5 rounded-lg flex items-center justify-center ${activeTheme.btnInactive}`}
                   title="Decrease font size"
                 >
@@ -789,10 +712,7 @@ export default function PostView() {
                 </button>
                 <span className="text-[11px] font-mono w-6 text-center">{fontSizeOffset > 0 ? `+${fontSizeOffset}` : fontSizeOffset}</span>
                 <button 
-                  onClick={() => {
-                    triggerSound('click')
-                    setFontSizeOffset(prev => Math.min(4, prev + 1))
-                  }}
+                  onClick={() => setFontSizeOffset(prev => Math.min(4, prev + 1))}
                   className={`flex-1 py-1.5 rounded-lg flex items-center justify-center ${activeTheme.btnInactive}`}
                   title="Increase font size"
                 >
@@ -809,10 +729,7 @@ export default function PostView() {
                 {['compact', 'standard', 'expanded'].map((w) => (
                   <button
                     key={w}
-                    onClick={() => {
-                      triggerSound('click')
-                      setContentWidth(w)
-                    }}
+                    onClick={() => setContentWidth(w)}
                     className={`flex-1 py-1.5 rounded-lg text-[10px] uppercase font-bold transition-all ${
                       contentWidth === w ? activeTheme.btnActive : activeTheme.btnInactive
                     }`}
@@ -824,7 +741,7 @@ export default function PostView() {
             </div>
           </div>
 
-          {/* Zen View / Fullscreen Action */}
+          {/* Zen View Button */}
           <button 
             onClick={toggleFocusMode}
             className={`w-full py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold text-xs transition-all ${
@@ -835,7 +752,7 @@ export default function PostView() {
           </button>
         </div>
 
-        {/* Primary Tactile Dock Pill */}
+        {/* Dock Pill */}
         <div className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full border shadow-2xl transition-all ${activeTheme.dockBg}`}>
           <button 
             onClick={scrollToTop} 
@@ -847,10 +764,7 @@ export default function PostView() {
 
           {tableOfContents.length > 0 && (
             <button 
-              onClick={() => {
-                triggerSound('toggle')
-                toggleSidebar()
-              }} 
+              onClick={toggleSidebar} 
               className={`p-2 rounded-full transition-all ${
                 isSidebarOpen ? activeTheme.dockBtnActive : activeTheme.dockBtnInactive
               }`}
@@ -863,10 +777,7 @@ export default function PostView() {
           <div className="h-4 w-px bg-current opacity-20 mx-0.5" />
 
           <button 
-            onClick={() => {
-              triggerSound('toggle')
-              toggleSettings()
-            }} 
+            onClick={toggleSettings} 
             className={`p-2 rounded-full transition-all ${
               isSettingsOpen ? activeTheme.dockBtnActive : activeTheme.dockBtnInactive
             }`}
@@ -894,7 +805,6 @@ export default function PostView() {
           </button>
         </div>
       </div>
-
     </div>
   )
 }

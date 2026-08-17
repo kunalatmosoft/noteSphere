@@ -1,4 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&display=swap');
+/* =========================================================
+   0. GOOGLE FONTS IMPORT & TYPOGRAPHY DEFINITIONS
+   ========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500;600;700&family=Lora:ital,wght@0,400..700;1,400..700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Nunito:ital,wght@0,300..800;1,300..800&family=Outfit:wght@300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-jakarta: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-nunito: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-outfit: 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-merriweather: 'Merriweather', Georgia, serif;
+  --font-lora: 'Lora', Cambria, Georgia, serif;
+  --font-newsreader: 'Newsreader', Georgia, serif;
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-jetbrains: 'JetBrains Mono', ui-monospace, monospace;
+  --font-fira: 'Fira Code', ui-monospace, monospace;
+}
+
+/* Font Utility Classes */
+.font-inter { font-family: var(--font-inter) !important; }
+.font-jakarta { font-family: var(--font-jakarta) !important; }
+.font-nunito { font-family: var(--font-nunito) !important; }
+.font-outfit { font-family: var(--font-outfit) !important; }
+.font-merriweather { font-family: var(--font-merriweather) !important; }
+.font-lora { font-family: var(--font-lora) !important; }
+.font-newsreader { font-family: var(--font-newsreader) !important; }
+.font-playfair { font-family: var(--font-playfair) !important; }
+.font-jetbrains { font-family: var(--font-jetbrains) !important; }
+.font-fira { font-family: var(--font-fira) !important; }
 
 /* Tailwind Directives */
 @tailwind base;
