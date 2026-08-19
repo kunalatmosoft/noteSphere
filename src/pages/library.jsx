@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getFeed, getTrending } from '../lib/posts.js';
 import { 
     getUserLibraries, 
@@ -8,17 +8,52 @@ import {
     deleteLibrary, 
     removePostFromLibrary,
     toggleLibraryVisibility,
-    getPublicLibraries // Ensure this is exported from your lib/library.js
+    getPublicLibraries
 } from '../lib/library.js';
 import PostCard from '../components/PostCard.jsx';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Library, Plus, Globe, Trash2, Edit2, X, Check, Search, Lock, Users } from 'lucide-react';
+import { 
+    TrendingUp, 
+    Library, 
+    Plus, 
+    Globe, 
+    Trash2, 
+    Edit3, 
+    X, 
+    Check, 
+    Search, 
+    Lock, 
+    Users, 
+    LayoutGrid, 
+    List, 
+    Share2, 
+    Sparkles, 
+    ArrowUpRight, 
+    BookOpen, 
+    Layers, 
+    CheckCircle2, 
+    AlertTriangle,
+    SlidersHorizontal
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+
+// Shimmer Skeleton Loaders
+const SkeletonCard = ({ viewMode }) => (
+    <div className={`bg-[#0d0f17]/60 border border-white/[0.06] rounded-2xl p-4 animate-pulse flex ${viewMode === 'list' ? 'flex-row items-center gap-4 h-24' : 'flex-col justify-between h-[300px]'}`}>
+        <div className={`bg-white/[0.04] rounded-xl ${viewMode === 'list' ? 'w-20 h-16 shrink-0' : 'w-full h-36 mb-3'}`} />
+        <div className="flex-1 space-y-2.5 w-full">
+            <div className="h-4 bg-white/[0.06] rounded-md w-3/4" />
+            <div className="h-3 bg-white/[0.03] rounded-md w-full" />
+            {viewMode === 'grid' && <div className="h-3 bg-white/[0.03] rounded-md w-1/2" />}
+        </div>
+    </div>
+);
 
 export default function CustomizedDashboard() {
     const { profile } = useAuth();
 
     const [activeSection, setActiveSection] = useState('public');
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
     // Data States
     const [posts, setPosts] = useState([]);
@@ -28,13 +63,21 @@ export default function CustomizedDashboard() {
 
     // UI States
     const [loading, setLoading] = useState(true);
-    const [isCreatingLib, setIsCreatingLib] = useState(false);
-    const [newLibName, setNewLibName] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const [copiedToast, setCopiedToast] = useState(false);
     
-    // Advanced Edit States
+    // Modal States
+    const [createModalOpen, setCreateModalOpen] = useState(false);
+    const [newLibName, setNewLibName] = useState('');
+    const [newLibIsPublic, setNewLibIsPublic] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+    // Edit Inline State
     const [isEditing, setIsEditing] = useState(false);
     const [editName, setEditName] = useState('');
+    const editInputRef = useRef(null);
 
     // Initial Load: Global data & User/Public libraries
     useEffect(() => {
@@ -46,13 +89,13 @@ export default function CustomizedDashboard() {
                 getPublicLibraries()
             ]);
 
-            setTrending(trendData);
-            setPosts(feedData);
-            setPublicLibraries(pubLibs);
+            setTrending(trendData || []);
+            setPosts(feedData || []);
+            setPublicLibraries(pubLibs || []);
 
             if (profile?.uid) {
                 const libs = await getUserLibraries(profile.uid);
-                setUserLibraries(libs);
+                setUserLibraries(libs || []);
             }
             setLoading(false);
         };
@@ -61,19 +104,18 @@ export default function CustomizedDashboard() {
 
     // Handle Section Switching
     useEffect(() => {
-        if (loading) return; // Skip initial render conflict
+        if (loading) return;
 
         const fetchSectionData = async () => {
             setLoading(true);
-            setIsEditing(false); // Close edit mode if switching tabs
-            setSearchQuery(''); // Reset search query when switching sections
+            setIsEditing(false);
+            setSearchQuery('');
 
             if (activeSection === 'public') {
                 setPosts(await getFeed({ sort: 'recent' }));
             } else if (activeSection === 'trending') {
                 setPosts(await getFeed({ sort: 'trending' }));
             } else {
-                // Fetch posts for the custom selected library
                 setPosts(await getLibraryPosts(activeSection));
             }
             setLoading(false);
@@ -82,42 +124,63 @@ export default function CustomizedDashboard() {
         fetchSectionData();
     }, [activeSection]);
 
+    useEffect(() => {
+        if (isEditing) editInputRef.current?.focus();
+    }, [isEditing]);
+
     // --- CRUD Handlers ---
 
     const handleCreateLibrary = async (e) => {
         e.preventDefault();
-        if (!newLibName.trim() || !profile?.uid) return;
+        if (!newLibName.trim() || !profile?.uid || isSubmitting) return;
 
-        const newLib = await createLibrary(profile.uid, newLibName);
-        setUserLibraries([...userLibraries, newLib]);
-        setNewLibName('');
-        setIsCreatingLib(false);
-        setActiveSection(newLib.id); 
+        try {
+            setIsSubmitting(true);
+            const newLib = await createLibrary(profile.uid, newLibName.trim(), newLibIsPublic);
+            setUserLibraries(prev => [...prev, newLib]);
+            if (newLibIsPublic) setPublicLibraries(prev => [...prev, newLib]);
+            
+            setNewLibName('');
+            setNewLibIsPublic(false);
+            setCreateModalOpen(false);
+            setActiveSection(newLib.id);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleRenameLibrary = async () => {
-        if (!editName.trim() || editName === activeLibInfo?.name) {
+        const trimmed = editName.trim();
+        if (!trimmed || trimmed === activeLibInfo?.name) {
             setIsEditing(false);
             return;
         }
-        await updateLibraryName(activeSection, editName);
-        setUserLibraries(userLibraries.map(lib => 
-            lib.id === activeSection ? { ...lib, name: editName } : lib
+        await updateLibraryName(activeSection, trimmed);
+        setUserLibraries(prev => prev.map(lib => 
+            lib.id === activeSection ? { ...lib, name: trimmed } : lib
+        ));
+        setPublicLibraries(prev => prev.map(lib => 
+            lib.id === activeSection ? { ...lib, name: trimmed } : lib
         ));
         setIsEditing(false);
     };
 
-    const handleDeleteLibrary = async () => {
-        if (!window.confirm("Are you sure you want to delete this entire library? This cannot be undone.")) return;
-        
-        await deleteLibrary(activeSection);
-        setUserLibraries(userLibraries.filter(lib => lib.id !== activeSection));
-        setActiveSection('public');
+    const handleConfirmDelete = async () => {
+        if (isSubmitting) return;
+        try {
+            setIsSubmitting(true);
+            await deleteLibrary(activeSection);
+            setUserLibraries(prev => prev.filter(lib => lib.id !== activeSection));
+            setPublicLibraries(prev => prev.filter(lib => lib.id !== activeSection));
+            setActiveSection('public');
+            setDeleteModalOpen(false);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleRemovePost = async (postId) => {
-        // Optimistic UI update
-        setPosts(posts.filter(p => p.id !== postId));
+        setPosts(prev => prev.filter(p => p.id !== postId));
         await removePostFromLibrary(activeSection, postId);
     };
 
@@ -125,22 +188,32 @@ export default function CustomizedDashboard() {
         if (!activeLibInfo) return;
         const newStatus = !activeLibInfo.isPublic;
         
-        // Optimistic UI Update
-        setUserLibraries(userLibraries.map(lib => 
+        setUserLibraries(prev => prev.map(lib => 
             lib.id === activeSection ? { ...lib, isPublic: newStatus } : lib
         ));
+
+        if (newStatus) {
+            setPublicLibraries(prev => [...prev, { ...activeLibInfo, isPublic: true }]);
+        } else {
+            setPublicLibraries(prev => prev.filter(lib => lib.id !== activeSection));
+        }
         
         await toggleLibraryVisibility(activeSection, newStatus);
     };
 
-    // --- OWNERSHIP CHECKS ---
+    const handleShareLink = () => {
+        navigator.clipboard.writeText(window.location.href);
+        setCopiedToast(true);
+        setTimeout(() => setCopiedToast(false), 2000);
+    };
+
+    // --- Ownership & Info ---
     const activeLibInfo = userLibraries.find(l => l.id === activeSection) || publicLibraries.find(l => l.id === activeSection);
     const isCustomLibrary = activeSection !== 'public' && activeSection !== 'trending';
     const isOwner = isCustomLibrary && activeLibInfo?.uid === profile?.uid;
-
     const communityLibraries = publicLibraries.filter(lib => lib.uid !== profile?.uid);
 
-    // Derived State: Filtered Posts
+    // Filtered Posts
     const filteredPosts = posts.filter(post => {
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
@@ -152,228 +225,445 @@ export default function CustomizedDashboard() {
     });
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-[240px_1fr_300px] gap-6">
+        <div className="min-h-screen bg-[#090a0f] text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+            {/* Ambient Background Glows */}
+            <div className="fixed top-0 left-1/4 w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="fixed bottom-10 right-10 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl pointer-events-none" />
 
-            {/* LEFT SIDEBAR: Navigation & Custom Libraries */}
-            <aside className="space-y-6">
-                <div className="space-y-2">
-                    <h2 className="text-sm font-bold text-base-400 uppercase tracking-wider mb-3">Discover</h2>
-                    <button
-                        onClick={() => setActiveSection('public')}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === 'public' ? 'bg-base-800 text-white' : 'text-base-300 hover:bg-base-900'}`}
-                    >
-                        <Globe size={18} /> Global Feed
-                    </button>
-                    <button
-                        onClick={() => setActiveSection('trending')}
-                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === 'trending' ? 'bg-base-800 text-white' : 'text-base-300 hover:bg-base-900'}`}
-                    >
-                        <TrendingUp size={18} /> Top Ranked
-                    </button>
-                </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] xl:grid-cols-[260px_1fr_300px] gap-8">
 
-                {communityLibraries.length > 0 && (
-                    <div className="space-y-2 pt-4 border-t border-base-800">
-                        <h2 className="text-sm font-bold text-base-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <Users size={16} /> Community Libraries
-                        </h2>
-                        {communityLibraries.map(lib => (
-                            <button
-                                key={lib.id}
-                                onClick={() => setActiveSection(lib.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === lib.id ? 'bg-base-800 text-white' : 'text-base-300 hover:bg-base-900'}`}
-                            >
-                                <Library size={18} className="flex-shrink-0 text-accent-500/70" />
-                                <span className="truncate">{lib.name}</span>
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    {/* LEFT SIDEBAR: Navigation & Libraries */}
+                    <aside className="space-y-6">
+                        {/* Feed Navigation */}
+                        <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
+                            <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider px-3 py-2">
+                                Feeds
+                            </h2>
+                            <div className="space-y-1">
+                                <button
+                                    onClick={() => setActiveSection('public')}
+                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                        activeSection === 'public' 
+                                            ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]' 
+                                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <Globe size={16} /> Global Explorer
+                                    </div>
+                                    {activeSection === 'public' && <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />}
+                                </button>
 
-                {profile && (
-                    <div className="space-y-2 pt-4 border-t border-base-800">
-                        <h2 className="text-sm font-bold text-base-400 uppercase tracking-wider mb-3 flex items-center justify-between">
-                            My Libraries
-                            <button onClick={() => setIsCreatingLib(!isCreatingLib)} className="hover:text-accent-500 transition-colors p-1 rounded hover:bg-base-800">
-                                <Plus size={16} />
-                            </button>
-                        </h2>
+                                <button
+                                    onClick={() => setActiveSection('trending')}
+                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                        activeSection === 'trending' 
+                                            ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]' 
+                                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <TrendingUp size={16} /> Top Ranked
+                                    </div>
+                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                        Hot
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
 
-                        {isCreatingLib && (
-                            <form onSubmit={handleCreateLibrary} className="mb-3">
-                                <input
-                                    type="text" autoFocus placeholder="Library name..."
-                                    className="w-full bg-base-900 border border-base-700 rounded-md px-3 py-1.5 text-sm outline-none focus:border-accent-500"
-                                    value={newLibName} onChange={(e) => setNewLibName(e.target.value)}
-                                    onBlur={() => !newLibName && setIsCreatingLib(false)}
-                                />
-                            </form>
+                        {/* User Libraries */}
+                        {profile && (
+                            <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
+                                <div className="flex items-center justify-between px-3 py-2 mb-1">
+                                    <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                                        <Layers size={13} className="text-indigo-400" /> My Collections
+                                    </h2>
+                                    <button 
+                                        onClick={() => setCreateModalOpen(true)}
+                                        className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+                                        title="Create Library"
+                                    >
+                                        <Plus size={15} strokeWidth={2.5} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-1 max-h-52 overflow-y-auto custom-scrollbar pr-1">
+                                    {userLibraries.length === 0 ? (
+                                        <p className="text-[11px] text-zinc-500 px-3 py-2 italic">
+                                            No collections yet. Click + to create.
+                                        </p>
+                                    ) : (
+                                        userLibraries.map(lib => (
+                                            <button
+                                                key={lib.id}
+                                                onClick={() => setActiveSection(lib.id)}
+                                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                                                    activeSection === lib.id 
+                                                        ? 'bg-white/[0.08] text-indigo-300 font-semibold border border-indigo-500/30' 
+                                                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2.5 truncate">
+                                                    <BookOpen size={15} className={activeSection === lib.id ? 'text-indigo-400' : 'text-zinc-500'} />
+                                                    <span className="truncate">{lib.name}</span>
+                                                </div>
+                                                {lib.isPublic ? (
+                                                    <Globe size={12} className="text-emerald-400/80 shrink-0" title="Public collection" />
+                                                ) : (
+                                                    <Lock size={12} className="text-zinc-500 shrink-0" title="Private collection" />
+                                                )}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
                         )}
 
-                        {userLibraries.map(lib => (
-                            <button
-                                key={lib.id}
-                                onClick={() => setActiveSection(lib.id)}
-                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === lib.id ? 'bg-base-800 text-white' : 'text-base-300 hover:bg-base-900'}`}
-                            >
-                                <div className="flex items-center gap-3 overflow-hidden">
-                                    <Library size={18} className="flex-shrink-0" />
-                                    <span className="truncate">{lib.name}</span>
+                        {/* Community Curations */}
+                        {communityLibraries.length > 0 && (
+                            <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
+                                <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider px-3 py-2 flex items-center gap-1.5">
+                                    <Users size={13} className="text-emerald-400" /> Community Stacks
+                                </h2>
+                                <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                                    {communityLibraries.map(lib => (
+                                        <button
+                                            key={lib.id}
+                                            onClick={() => setActiveSection(lib.id)}
+                                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all truncate ${
+                                                activeSection === lib.id 
+                                                    ? 'bg-white/[0.08] text-indigo-300 font-semibold border border-indigo-500/30' 
+                                                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
+                                            }`}
+                                        >
+                                            <Library size={15} className="text-emerald-400/70 shrink-0" />
+                                            <span className="truncate">{lib.name}</span>
+                                        </button>
+                                    ))}
                                 </div>
-                                {lib.isPublic && <Globe size={12} className="text-accent-500 flex-shrink-0" />}
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </aside>
+                            </div>
+                        )}
+                    </aside>
 
-            {/* MAIN CONTENT AREA */}
-            <main>
-                <div className="flex items-center justify-between mb-4 min-h-[40px]">
-                    
-                    {/* EDIT MODE UI */}
-                    {isEditing && isOwner ? (
-                        <div className="flex items-center gap-2 w-full max-w-md">
-                            <input 
-                                autoFocus type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
-                                className="bg-base-900 border border-accent-500 rounded-lg px-3 py-1.5 outline-none flex-grow"
-                                onKeyDown={(e) => e.key === 'Enter' && handleRenameLibrary()}
-                            />
-                            <button onClick={handleRenameLibrary} className="p-2 text-green-500 hover:bg-base-800 rounded-lg transition-colors">
-                                <Check size={18} />
-                            </button>
-                            <button onClick={() => setIsEditing(false)} className="p-2 text-red-500 hover:bg-base-800 rounded-lg transition-colors">
-                                <X size={18} />
-                            </button>
-                        </div>
-                    ) : (
-                        // NORMAL HEADER UI
-                        <div className="flex items-center gap-4">
-                            <h1 className="text-2xl font-bold capitalize flex items-center gap-3 group">
-                                {isCustomLibrary ? activeLibInfo?.name : (activeSection === 'public' ? 'Global Feed' : 'Trending Posts')}
+                    {/* MAIN CONTENT AREA */}
+                    <main className="min-w-0">
+                        {/* Header Banner */}
+                        <div className="relative mb-6 p-5 sm:p-6 rounded-2xl bg-[#0d0f17]/80 backdrop-blur-xl border border-white/[0.07] shadow-xl shadow-black/20">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 
-                                {/* ONLY owners can rename */}
-                                {isOwner && (
+                                {/* Title & Inline Edit */}
+                                <div className="flex-1 min-w-0">
+                                    {isEditing && isOwner ? (
+                                        <div className="flex items-center gap-2 max-w-md">
+                                            <input 
+                                                ref={editInputRef}
+                                                type="text" 
+                                                value={editName} 
+                                                onChange={(e) => setEditName(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleRenameLibrary()}
+                                                className="w-full bg-black/40 border border-indigo-500/80 rounded-xl px-3 py-1.5 text-base font-semibold text-zinc-100 outline-none"
+                                            />
+                                            <button onClick={handleRenameLibrary} className="p-2 text-emerald-400 hover:bg-white/[0.06] rounded-lg transition-colors">
+                                                <Check size={16} />
+                                            </button>
+                                            <button onClick={() => setIsEditing(false)} className="p-2 text-rose-400 hover:bg-white/[0.06] rounded-lg transition-colors">
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-3">
+                                            <h1 className="text-xl font-bold tracking-tight text-zinc-100 truncate flex items-center gap-2">
+                                                {isCustomLibrary ? activeLibInfo?.name : (activeSection === 'public' ? 'Global Feed' : 'Trending Publications')}
+                                            </h1>
+                                            
+                                            {isOwner && (
+                                                <button 
+                                                    onClick={() => { setEditName(activeLibInfo?.name || ''); setIsEditing(true); }}
+                                                    className="p-1 text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] rounded-md transition-colors"
+                                                    title="Rename Collection"
+                                                >
+                                                    <Edit3 size={15} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Subtitle & Badges */}
+                                    <div className="flex flex-wrap items-center gap-2.5 mt-1.5">
+                                        <span className="text-xs text-zinc-400">
+                                            {posts.length} {posts.length === 1 ? 'article' : 'articles'} in view
+                                        </span>
+
+                                        {isCustomLibrary && (
+                                            <>
+                                                <span className="text-zinc-600">•</span>
+                                                <button
+                                                    disabled={!isOwner}
+                                                    onClick={handleToggleVisibility}
+                                                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition-all ${
+                                                        activeLibInfo?.isPublic 
+                                                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                                                            : 'bg-zinc-800/60 text-zinc-400 border-zinc-700/60'
+                                                    } ${isOwner ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`}
+                                                    title={isOwner ? "Toggle Public / Private" : undefined}
+                                                >
+                                                    {activeLibInfo?.isPublic ? <Globe size={11} /> : <Lock size={11} />}
+                                                    {activeLibInfo?.isPublic ? 'Public' : 'Private'}
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Controls: Actions & View Switcher */}
+                                <div className="flex items-center gap-2 self-start sm:self-auto">
+                                    {isCustomLibrary && (
+                                        <button 
+                                            onClick={handleShareLink}
+                                            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/[0.06] transition-all"
+                                            title="Share collection link"
+                                        >
+                                            <Share2 size={15} />
+                                        </button>
+                                    )}
+
+                                    {isOwner && (
+                                        <button 
+                                            onClick={() => setDeleteModalOpen(true)}
+                                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all"
+                                            title="Delete Collection"
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
+                                    )}
+
+                                    <div className="flex items-center p-1 bg-black/40 border border-white/[0.06] rounded-xl">
+                                        <button 
+                                            onClick={() => setViewMode('grid')}
+                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                                            title="Grid View"
+                                        >
+                                            <LayoutGrid size={14} />
+                                        </button>
+                                        <button 
+                                            onClick={() => setViewMode('list')}
+                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                                            title="List View"
+                                        >
+                                            <List size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Search & Filter Bar */}
+                        {!loading && posts.length > 0 && (
+                            <div className="relative mb-6">
+                                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Filter by title, tag, or keywords..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-[#0d0f17]/60 border border-white/[0.08] focus:border-indigo-500/80 focus:ring-2 focus:ring-indigo-500/20 rounded-xl pl-10 pr-9 py-2.5 text-xs text-zinc-100 placeholder:text-zinc-500 outline-none transition-all"
+                                />
+                                {searchQuery && (
                                     <button 
-                                        onClick={() => { setEditName(activeLibInfo?.name); setIsEditing(true); }}
-                                        className="opacity-0 group-hover:opacity-100 text-base-400 hover:text-accent-500 transition-opacity p-1"
-                                        title="Rename Library"
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200"
                                     >
-                                        <Edit2 size={16} />
+                                        <X size={14} />
                                     </button>
                                 )}
-                            </h1>
-
-                            {/* ONLY owners can toggle visibility */}
-                            {isOwner && !isEditing && (
-                                <button
-                                    onClick={handleToggleVisibility}
-                                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-colors border ${
-                                        activeLibInfo?.isPublic 
-                                        ? 'bg-accent-500/10 text-accent-500 border-accent-500/30 hover:bg-accent-500/20' 
-                                        : 'bg-base-800 text-base-400 border-base-700 hover:bg-base-700 hover:text-white'
-                                    }`}
-                                    title={activeLibInfo?.isPublic ? "Make Private" : "Make Public"}
-                                >
-                                    {activeLibInfo?.isPublic ? (
-                                        <><Globe size={14} /> Public</>
-                                    ) : (
-                                        <><Lock size={14} /> Private</>
-                                    )}
-                                </button>
-                            )}
-                        </div>
-                    )}
-
-                    {/* ONLY owners can delete */}
-                    {isOwner && !isEditing && (
-                        <button 
-                            onClick={handleDeleteLibrary} 
-                            className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                        >
-                            <Trash2 size={16} /> Delete Library
-                        </button>
-                    )}
-                </div>
-
-                {/* SEARCH BAR */}
-                {!loading && posts.length > 0 && (
-                    <div className="relative mb-6">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search size={18} className="text-base-400" />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Search posts by title, tag, or content..."
-                            className="w-full bg-base-900 border border-base-700 rounded-lg pl-10 pr-4 py-2.5 text-sm outline-none focus:border-accent-500 transition-colors"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                )}
-
-                {/* POSTS GRID OR EMPTY STATES */}
-                {loading ? (
-                    <div className="flex space-x-2 animate-pulse py-8 justify-center">
-                        <div className="w-3 h-3 bg-base-700 rounded-full"></div>
-                        <div className="w-3 h-3 bg-base-700 rounded-full"></div>
-                        <div className="w-3 h-3 bg-base-700 rounded-full"></div>
-                    </div>
-                ) : posts.length === 0 ? (
-                    <div className="text-center py-12 bg-base-900/50 rounded-xl border border-base-800 mt-6">
-                        <p className="text-base-400 mb-2">Nothing to see here yet.</p>
-                        {isOwner && (
-                            <p className="text-sm text-base-500">Click "Save to Library" on any post to add it here.</p>
+                            </div>
                         )}
-                    </div>
-                ) : filteredPosts.length === 0 ? (
-                    <div className="text-center py-12 bg-base-900/50 rounded-xl border border-base-800">
-                        <p className="text-base-400">No posts match "{searchQuery}"</p>
-                        <button 
-                            onClick={() => setSearchQuery('')}
-                            className="text-accent-500 text-sm hover:underline mt-2"
-                        >
-                            Clear search
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid sm:grid-cols-2 gap-4">
-                        {filteredPosts.map((p) => (
-                            <PostCard 
-                                key={p.id} 
-                                post={p} 
-                                userLibraries={userLibraries} 
-                                activeLibraryId={isOwner ? activeSection : null}
-                                onRemove={handleRemovePost}
-                            />
-                        ))}
-                    </div>
-                )}
-            </main>
 
-            {/* RIGHT ASIDE: Quick Trends */}
-            <aside className="hidden xl:block space-y-6">
-                <div className="bg-base-900 border border-base-800 rounded-xl p-4 sticky top-6">
-                    <h3 className="font-semibold flex items-center gap-2 mb-4">
-                        <TrendingUp size={16} className="text-accent-500" /> Hot Right Now
-                    </h3>
-                    <ol className="space-y-3">
-                        {trending.slice(0, 5).map((p, i) => (
-                            <li key={p.id} className="text-sm group">
-                                <Link to={`/post/${p.id}`} className="flex gap-3">
-                                    <span className="text-base-500 font-medium group-hover:text-accent-500 transition-colors">
-                                        0{i + 1}
+                        {/* Posts Rendering Grid / List */}
+                        {loading ? (
+                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
+                                {[...Array(4)].map((_, i) => (
+                                    <SkeletonCard key={i} viewMode={viewMode} />
+                                ))}
+                            </div>
+                        ) : posts.length === 0 ? (
+                            <div className="p-12 text-center rounded-2xl bg-[#0d0f17]/40 border border-white/[0.06]">
+                                <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                    <Sparkles size={22} strokeWidth={1.75} />
+                                </div>
+                                <h3 className="text-sm font-semibold text-zinc-200 mb-1">No articles found</h3>
+                                <p className="text-xs text-zinc-500 max-w-xs mx-auto">
+                                    {isOwner ? 'Save interesting articles from the global feed into this collection.' : 'There are currently no items available in this section.'}
+                                </p>
+                            </div>
+                        ) : filteredPosts.length === 0 ? (
+                            <div className="p-10 text-center rounded-2xl bg-[#0d0f17]/40 border border-white/[0.06]">
+                                <p className="text-xs text-zinc-400">No posts match "{searchQuery}"</p>
+                                <button 
+                                    onClick={() => setSearchQuery('')} 
+                                    className="text-xs text-indigo-400 hover:underline mt-2 font-semibold"
+                                >
+                                    Reset filter
+                                </button>
+                            </div>
+                        ) : (
+                            <div className={`grid gap-4 ${viewMode === 'grid' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
+                                {filteredPosts.map(p => (
+                                    <PostCard 
+                                        key={p.id} 
+                                        post={p} 
+                                        userLibraries={userLibraries} 
+                                        activeLibraryId={isOwner ? activeSection : null}
+                                        onRemove={handleRemovePost}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </main>
+
+                    {/* RIGHT ASIDE: Trending Insights */}
+                    <aside className="hidden xl:block space-y-6">
+                        <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-5 sticky top-6 shadow-lg shadow-black/20">
+                            <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/[0.05]">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+                                    <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                        <TrendingUp size={13} strokeWidth={2.5} />
                                     </span>
-                                    <span className="line-clamp-2 text-base-200 group-hover:text-white transition-colors">
-                                        {p.title}
-                                    </span>
-                                </Link>
-                            </li>
-                        ))}
-                    </ol>
+                                    Hot Right Now
+                                </h3>
+                            </div>
+
+                            <ol className="space-y-1">
+                                {trending.slice(0, 5).map((p, i) => (
+                                    <li key={p.id}>
+                                        <Link 
+                                            to={`/post/${p.id}`} 
+                                            className="group flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-white/[0.04] transition-all"
+                                        >
+                                            <div className="flex items-center gap-3 min-w-0 pr-2">
+                                                <span className={`text-xs font-mono font-bold w-4 ${i === 0 ? 'text-amber-400' : 'text-zinc-600'}`}>
+                                                    0{i + 1}
+                                                </span>
+                                                <span className="text-xs font-medium text-zinc-300 group-hover:text-indigo-400 transition-colors line-clamp-1">
+                                                    {p.title}
+                                                </span>
+                                            </div>
+                                            <ArrowUpRight size={13} className="text-zinc-600 group-hover:text-zinc-300 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ol>
+                        </div>
+                    </aside>
+
                 </div>
-            </aside>
+            </div>
 
+            {/* CREATE LIBRARY MODAL */}
+            {createModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div 
+                        className="w-full max-w-md bg-[#0e111a] border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden"
+                        onKeyDown={(e) => { if (e.key === 'Escape') setCreateModalOpen(false); }}
+                    >
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+                            <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+                                <Plus size={16} className="text-indigo-400" /> Create Collection
+                            </h3>
+                            <button onClick={() => setCreateModalOpen(false)} className="p-1 rounded-md text-zinc-400 hover:text-zinc-100">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateLibrary} className="p-5 space-y-4">
+                            <div>
+                                <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                                    Collection Name
+                                </label>
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    value={newLibName}
+                                    onChange={(e) => setNewLibName(e.target.value)}
+                                    placeholder="e.g. Backend Microservices"
+                                    className="w-full px-3.5 py-2.5 bg-black/40 border border-white/[0.1] focus:border-indigo-500/80 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none"
+                                    required
+                                />
+                            </div>
+
+                            <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] cursor-pointer hover:bg-white/[0.04] transition-colors">
+                                <input 
+                                    type="checkbox" 
+                                    checked={newLibIsPublic} 
+                                    onChange={(e) => setNewLibIsPublic(e.target.checked)}
+                                    className="rounded border-zinc-700 text-indigo-600 focus:ring-0 w-4 h-4 bg-zinc-900"
+                                />
+                                <div>
+                                    <p className="text-xs font-semibold text-zinc-200">Public Collection</p>
+                                    <p className="text-[10px] text-zinc-500">Allow community members to view and discover this collection</p>
+                                </div>
+                            </label>
+
+                            <div className="flex justify-end gap-2.5 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setCreateModalOpen(false)}
+                                    className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={!newLibName.trim() || isSubmitting}
+                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold rounded-xl transition-all"
+                                >
+                                    {isSubmitting ? 'Creating...' : 'Create'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* DELETE MODAL */}
+            {deleteModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="w-full max-w-sm bg-[#0e111a] border border-white/[0.08] rounded-2xl shadow-2xl p-5 text-center">
+                        <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 w-fit mx-auto mb-3">
+                            <AlertTriangle size={22} strokeWidth={2} />
+                        </div>
+                        <h3 className="text-sm font-semibold text-zinc-100 mb-1">Delete Collection?</h3>
+                        <p className="text-xs text-zinc-400 mb-5">
+                            Are you sure you want to remove <span className="font-semibold text-zinc-200">"{activeLibInfo?.name}"</span>? All saved links inside this collection will be cleared.
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setDeleteModalOpen(false)}
+                                className="flex-1 py-2 text-xs font-medium text-zinc-300 bg-white/[0.04] hover:bg-white/[0.08] rounded-xl border border-white/[0.06]"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmDelete}
+                                disabled={isSubmitting}
+                                className="flex-1 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-all shadow-[0_0_15px_rgba(225,29,72,0.3)]"
+                            >
+                                {isSubmitting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TOAST NOTIFICATION */}
+            {copiedToast && (
+                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900 border border-indigo-500/30 text-indigo-300 text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-bottom-2">
+                    <CheckCircle2 size={14} className="text-indigo-400" />
+                    Collection link copied to clipboard!
+                </div>
+            )}
         </div>
     );
 }
