@@ -11,6 +11,13 @@ import {
 import { db } from './firebase'
 import { updateNode } from './notes'
 import { logActivity } from './social'
+import { algoliasearch } from 'algoliasearch'
+
+const algoliaClient = algoliasearch(
+  import.meta.env.VITE_ALGOLIA_APP_ID,
+  import.meta.env.VITE_ALGOLIA_ADMIN_KEY
+)
+const INDEX_NAME = import.meta.env.VITE_ALGOLIA_INDEX_NAME || 'posts'
 
 const postsCol = collection(db, 'posts')
 
@@ -33,16 +40,69 @@ export async function publishNote({ note, author }) {
   })
   await updateNode(note.id, { published: true, publishedPostId: ref.id })
   await logActivity({ userId: author.uid, type: 'publish', targetId: ref.id, meta: { title: note.name } })
+
+  // Save to Algolia
+  try {
+    const algoliaRecord = {
+      objectID: ref.id,
+      title: note.name,
+      content: note.content ? note.content.slice(0, 1500) : '',
+      tags: note.tags || [],
+      authorName: author.displayName || '',
+      authorUsername: author.username || '',
+      createdAt: Date.now()
+    }
+    await algoliaClient.saveObject({
+      indexName: INDEX_NAME,
+      body: algoliaRecord
+    })
+    console.log('Post saved to Firestore and Algolia successfully!')
+  } catch (error) {
+    console.error('Error saving to Algolia:', error)
+  }
+
   return ref.id
 }
 
 export async function unpublishPost(postId, noteId) {
   await deleteDoc(doc(db, 'posts', postId))
   if (noteId) await updateNode(noteId, { published: false, publishedPostId: null })
+
+  // Remove from Algolia
+  try {
+    await algoliaClient.deleteObject({
+      indexName: INDEX_NAME,
+      objectID: postId
+    })
+    console.log('Post removed from Algolia successfully!')
+  } catch (error) {
+    console.error('Error removing from Algolia:', error)
+  }
 }
 
 export async function updatePublishedPost(postId, data) {
   await updateDoc(doc(db, 'posts', postId), { ...data, updatedAt: serverTimestamp() })
+
+  // Update in Algolia
+  try {
+    const algoliaUpdate = {
+      objectID: postId,
+    }
+    if (data.title !== undefined) algoliaUpdate.title = data.title;
+    if (data.content !== undefined) algoliaUpdate.content = data.content.slice(0, 1500);
+    if (data.tags !== undefined) algoliaUpdate.tags = data.tags;
+
+    if (Object.keys(algoliaUpdate).length > 1) {
+      await algoliaClient.partialUpdateObject({
+        indexName: INDEX_NAME,
+        objectID: postId,
+        attributesToUpdate: algoliaUpdate
+      })
+      console.log('Post updated in Algolia successfully!')
+    }
+  } catch (error) {
+    console.error('Error updating in Algolia:', error)
+  }
 }
 
 export async function getPost(postId) {

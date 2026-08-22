@@ -402,3 +402,16 @@ body {
 .prose-chatgpt .markdown-body code:not(pre code):not(div code) * {
   color: #10a37f !important;
 }
+/* =========================================================
+   8. ALGOLIA SEARCH HIGHLIGHTS
+   ========================================================= */
+.ais-Highlight-highlighted {
+  background-color: rgba(253, 224, 71, 0.5) !important; /* yellow-300 with opacity */
+  color: inherit !important;
+  border-bottom: 2px solid #eab308;
+}
+.dark .ais-Highlight-highlighted {
+  background-color: rgba(202, 138, 4, 0.4) !important; /* yellow-600 with opacity */
+  border-bottom: 2px solid #facc15;
+}
+
