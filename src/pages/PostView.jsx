@@ -13,7 +13,7 @@ import {
   Keyboard
 } from 'lucide-react'
 import { format } from 'date-fns'
-
+import SEO from '../components/SEO.jsx'
 // High-speed In-Memory Cache (Zero-latency instant navigation)
 const postMemoryCache = new Map()
 
@@ -367,6 +367,25 @@ export default function PostView() {
       style={{ fontSize: `${16 + fontSizeOffset}px` }}
       className={`min-h-screen w-full transition-colors duration-200 ${activeTheme.app} ${fontFamily} antialiased selection:bg-emerald-500/30`}
     >
+      <SEO 
+        title={post.title} 
+        description={post.content?.substring(0, 160).replace(/[#*]/g, '').trim()} 
+        url={`/post/${postId}`} 
+        image={post.cover} 
+        type="article" 
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": post.title,
+          "image": post.cover ? [post.cover] : [],
+          "author": {
+            "@type": "Person",
+            "name": post.authorName,
+            "url": `https://notespher.netlify.app/u/${post.authorUsername}`
+          },
+          "datePublished": post.createdAt?.toDate ? post.createdAt.toDate().toISOString() : undefined,
+        }}
+      />
       {toastMessage && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-zinc-950 text-white border border-zinc-800 text-xs font-medium shadow-2xl flex items-center gap-2">
           <Check size={14} className="text-emerald-400" />

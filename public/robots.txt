@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://notespher.netlify.app/sitemap.xml
+

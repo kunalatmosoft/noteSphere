@@ -4,7 +4,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase'; 
 import { RedditFeed } from '../components/reddit/RedditFeed';
 import { createRedditPost } from '../lib/reddit';
-import { Search, Globe, User, X } from 'lucide-react'; // Removed unused icons
+import { Search, Globe, User, X } from 'lucide-react';
+import SEO from '../components/SEO.jsx';
 
 export default function CommunityPage() {
   const { communityId } = useParams();
@@ -19,7 +20,7 @@ export default function CommunityPage() {
   
   // Search & Refresh State
   const [searchQuery, setSearchQuery] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0); // Added to smoothly reload the feed
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -48,7 +49,6 @@ export default function CommunityPage() {
     if (!currentUser || !newPostTitle.trim()) return;
 
     try {
-      // Wait for Firebase to finish creating the post
       await createRedditPost({
         communityId: finalCommunity.toLowerCase(),
         communityName: finalCommunity.toLowerCase(),
@@ -57,16 +57,13 @@ export default function CommunityPage() {
         author: currentUser,
       });
 
-      // Clear the form
       setNewPostTitle('');
       setNewPostContent('');
       setIsPosting(false);
       
-      // Navigate or smoothly refresh the feed
       if (!communityId || communityId.toLowerCase() !== finalCommunity.toLowerCase()) {
         navigate(`/r/${finalCommunity.toLowerCase()}`);
       } else {
-        // This forces the RedditFeed component to remount and fetch the new post without a hard reload
         setRefreshKey(prev => prev + 1); 
       }
     } catch (error) {
@@ -77,6 +74,11 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen bg-zinc-200/50 dark:bg-[#030303] py-6 px-4">
+      <SEO 
+        title={communityId ? `r/${communityId}` : 'Home Feed'}
+        description={communityId ? `Welcome to r/${communityId}. Check the rules, share your thoughts, and connect with the community.` : 'Your personal NotesPhere frontpage. Come here to check in with your favorite communities.'}
+        url={communityId ? `/r/${communityId}` : '/r'}
+      />
       <div className="max-w-[960px] mx-auto flex flex-col md:flex-row gap-6">
         
         {/* Main Content Column */}

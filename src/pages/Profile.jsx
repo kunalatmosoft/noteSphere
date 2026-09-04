@@ -5,6 +5,7 @@ import { getUserByUsername, followUser, unfollowUser, getUserActivity } from '..
 import { getPostsByAuthor } from '../lib/posts.js'
 import PostCard from '../components/PostCard.jsx'
 import { formatDistanceToNow } from 'date-fns'
+import SEO from '../components/SEO.jsx'
 
 export default function Profile() {
   const { username } = useParams()
@@ -49,6 +50,24 @@ export default function Profile() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <SEO 
+        title={`${profile.displayName} (@${profile.username})`}
+        description={profile.bio || `Check out ${profile.displayName}'s profile and posts on Notesphere.`}
+        url={`/u/${profile.username}`}
+        image={profile.photoURL}
+        type="profile"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          "mainEntity": {
+            "@type": "Person",
+            "name": profile.displayName,
+            "alternateName": profile.username,
+            "description": profile.bio,
+            "image": profile.photoURL || ""
+          }
+        }}
+      />
       <div className="flex items-center gap-5">
         {profile.photoURL ? (
           <img src={profile.photoURL} className="w-20 h-20 rounded-full object-cover" />

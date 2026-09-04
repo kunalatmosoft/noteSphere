@@ -58,6 +58,8 @@ const SkeletonAuthor = () => (
   </div>
 )
 
+import SEO from '../components/SEO.jsx'
+
 export default function PublicFeed() {
   const { profile } = useAuth()
   const [sort, setSort] = useState('recent')
@@ -91,6 +93,11 @@ export default function PublicFeed() {
 
   return (
     <div className="min-h-screen bg-[#090a0f] text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+      <SEO 
+        title="Explore Feed"
+        description="Fresh insights, documentation, and ideas from the community on Notesphere."
+        url="/"
+      />
       {/* Subtle Ambient Background Lighting */}
       <div className="fixed top-0 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed top-1/3 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />

@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../lib/firebase'; // Your existing config[cite: 2]
 import { PostCard } from '../components/reddit/PostCard';
 import { CommentSection } from '../components/reddit/CommentTree';
+import SEO from '../components/SEO.jsx';
 
 export default function PostDetailsPage() {
   const { postId } = useParams(); // URL params e.g., /post/:postId
@@ -65,6 +66,22 @@ export default function PostDetailsPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900 py-8 px-4">
+      <SEO 
+        title={post.title} 
+        description={post.content?.substring(0, 160).replace(/[#*]/g, '').trim()} 
+        url={`/r/post/${postId}`} 
+        type="article"
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "DiscussionForumPosting",
+          "headline": post.title,
+          "author": {
+            "@type": "Person",
+            "name": post.author?.displayName || post.author?.username
+          },
+          "datePublished": post.createdAt?.toDate ? post.createdAt.toDate().toISOString() : undefined,
+        }}
+      />
       <div className="max-w-2xl mx-auto mb-4">
         <button 
           onClick={() => navigate(-1)} 
