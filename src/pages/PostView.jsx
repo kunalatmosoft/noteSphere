@@ -73,14 +73,14 @@ export default function PostView() {
       // Fast Table of Contents parser
       if (p.content) {
         const headings = []
-        const lines = p.content.split('\n')
+        const lines = p.content.split(/\r?\n/)
         for (let i = 0; i < lines.length; i++) {
-          const match = lines[i].match(/^(#{1,4})\s+(.+)$/)
+          const match = lines[i].match(/^\s*(#{1,6})\s+(.+)$/)
           if (match) {
             headings.push({
               level: match[1].length,
               text: match[2].trim(),
-              slug: match[2].toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
+              slug: match[2].trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-')
             })
           }
         }
