@@ -72,47 +72,47 @@ export default function Profile() {
         {profile.photoURL ? (
           <img src={profile.photoURL} className="w-20 h-20 rounded-full object-cover" />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-base-800 flex items-center justify-center text-2xl font-bold">
+          <div className="w-20 h-20 rounded-full bg-black/10 dark:bg-base-800 flex items-center justify-center text-2xl font-bold">
             {profile.displayName?.[0]}
           </div>
         )}
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{profile.displayName}</h1>
-          <p className="text-base-300 text-sm">@{profile.username}</p>
+          <p className="text-base-600 dark:text-base-300 text-sm">@{profile.username}</p>
           {profile.bio && <p className="text-sm mt-1">{profile.bio}</p>}
           <div className="flex gap-4 mt-2 text-sm">
-            <span><b>{posts.length}</b> <span className="text-base-300">posts</span></span>
-            <span><b>{profile.followers?.length || 0}</b> <span className="text-base-300">followers</span></span>
-            <span><b>{profile.following?.length || 0}</b> <span className="text-base-300">following</span></span>
+            <span><b>{posts.length}</b> <span className="text-base-600 dark:text-base-300">posts</span></span>
+            <span><b>{profile.followers?.length || 0}</b> <span className="text-base-600 dark:text-base-300">followers</span></span>
+            <span><b>{profile.following?.length || 0}</b> <span className="text-base-600 dark:text-base-300">following</span></span>
           </div>
         </div>
         {!isMe && user && (
           <button
             onClick={handleFollow}
-            className={`px-4 py-1.5 rounded-lg font-medium text-sm ${isFollowing ? 'bg-base-800' : 'bg-accent-600 hover:bg-accent-700'}`}
+            className={`px-4 py-1.5 rounded-lg font-medium text-sm ${isFollowing ? 'bg-black/10 dark:bg-base-800' : 'bg-accent-600 hover:bg-accent-700 text-white'}`}
           >
             {isFollowing ? 'Following' : 'Follow'}
           </button>
         )}
       </div>
 
-      <div className="flex gap-4 border-b border-base-800 mt-6 mb-4 text-sm">
-        <button onClick={() => setTab('posts')} className={`pb-2 ${tab === 'posts' ? 'border-b-2 border-accent-500 text-accent-500' : 'text-base-300'}`}>Published posts</button>
-        <button onClick={() => setTab('activity')} className={`pb-2 ${tab === 'activity' ? 'border-b-2 border-accent-500 text-accent-500' : 'text-base-300'}`}>Activity</button>
+      <div className="flex gap-4 border-b border-black/10 dark:border-base-800 mt-6 mb-4 text-sm">
+        <button onClick={() => setTab('posts')} className={`pb-2 ${tab === 'posts' ? 'border-b-2 border-accent-500 text-accent-600 dark:text-accent-500 font-medium' : 'text-base-600 dark:text-base-300'}`}>Published posts</button>
+        <button onClick={() => setTab('activity')} className={`pb-2 ${tab === 'activity' ? 'border-b-2 border-accent-500 text-accent-600 dark:text-accent-500 font-medium' : 'text-base-600 dark:text-base-300'}`}>Activity</button>
       </div>
 
       {tab === 'posts' ? (
-        posts.length === 0 ? <p className="text-base-300">No published posts yet.</p> : (
+        posts.length === 0 ? <p className="text-base-600 dark:text-base-300">No published posts yet.</p> : (
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {posts.map((p) => <PostCard key={p.id} post={p} />)}
           </div>
         )
       ) : (
         <ul className="space-y-3">
-          {activity.length === 0 && <p className="text-base-300">No recent activity.</p>}
+          {activity.length === 0 && <p className="text-base-600 dark:text-base-300">No recent activity.</p>}
           {activity.map((a) => (
-            <li key={a.id} className="text-sm text-base-300">
-              {a.type === 'publish' && <span>Published <span className="text-base-100">"{a.meta?.title}"</span></span>}
+            <li key={a.id} className="text-sm text-base-600 dark:text-base-300">
+              {a.type === 'publish' && <span>Published <span className="text-base-900 dark:text-base-100 font-medium">"{a.meta?.title}"</span></span>}
               {a.type === 'follow' && <span>Started following someone new</span>}
               {a.type === 'like' && <span>Liked a post</span>}
               {' — '}{a.createdAt?.toDate ? formatDistanceToNow(a.createdAt.toDate(), { addSuffix: true }) : ''}

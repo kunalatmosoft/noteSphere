@@ -31,7 +31,7 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
   return (
     <div 
       onClick={handleCardClick} 
-      className="cursor-pointer block bg-base-900 border border-base-800 rounded-xl overflow-hidden hover:border-accent-500 transition-colors relative h-full flex flex-col"
+      className="cursor-pointer block bg-white dark:bg-base-900 border border-black/10 dark:border-base-800 rounded-xl overflow-hidden hover:border-accent-500 dark:hover:border-accent-500 transition-colors relative h-full flex flex-col shadow-sm dark:shadow-none"
     >
       {post.cover && <img src={post.cover} className="w-full h-40 object-cover" alt="Post cover" />}
       
@@ -63,15 +63,15 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
                 </button>
 
                 {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-base-900 border border-base-700 rounded-lg shadow-xl overflow-hidden py-1 z-20">
-                    <div className="px-3 py-2 text-xs font-semibold text-base-500 uppercase tracking-wider border-b border-base-800">
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-base-900 border border-black/10 dark:border-base-700 rounded-lg shadow-xl overflow-hidden py-1 z-20">
+                    <div className="px-3 py-2 text-xs font-semibold text-base-500 uppercase tracking-wider border-b border-black/10 dark:border-base-800">
                       Save to...
                     </div>
                     {userLibraries.map(lib => (
                       <button
                         key={lib.id}
                         onClick={(e) => handleSave(e, lib.id)}
-                        className="w-full text-left px-4 py-2 text-sm text-base-300 hover:bg-base-800 hover:text-white flex items-center justify-between"
+                        className="w-full text-left px-4 py-2 text-sm text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800 hover:text-base-900 dark:hover:text-white flex items-center justify-between"
                       >
                         <span className="truncate">{lib.name}</span>
                         {savedTo === lib.id && <Check size={14} className="text-accent-500" />}
@@ -84,7 +84,7 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
           </div>
         </div>
 
-        <p className="text-sm text-base-300 mt-1 line-clamp-2 flex-grow">
+        <p className="text-sm text-base-600 dark:text-base-300 mt-1 line-clamp-2 flex-grow">
           {(post.content || '').replace(/[#*`$>_-]/g, '').slice(0, 140)}
         </p>
         
@@ -96,14 +96,14 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
           ))}
         </div>
         
-        <div className="flex items-center justify-between mt-3 text-xs text-base-300 pt-3 border-t border-base-800/50">
-          <Link to={`/u/${post.authorUsername}`} className="hover:text-accent-500 relative z-10 font-medium">
+        <div className="flex items-center justify-between mt-3 text-xs text-base-600 dark:text-base-300 pt-3 border-t border-black/10 dark:border-base-800/50">
+          <Link to={`/u/${post.authorUsername}`} className="hover:text-accent-600 dark:hover:text-accent-500 relative z-10 font-medium text-base-900 dark:text-base-100">
             {post.authorName}
           </Link>
           <span>{date}</span>
         </div>
         
-        <div className="flex items-center gap-3 mt-2 text-xs text-base-300">
+        <div className="flex items-center gap-3 mt-2 text-xs text-base-600 dark:text-base-300">
           <span className="flex items-center gap-1"><Heart size={12} /> {post.likeCount || 0}</span>
           <span className="flex items-center gap-1"><Eye size={12} /> {post.views || 0}</span>
         </div>

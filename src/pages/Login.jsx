@@ -27,18 +27,18 @@ export default function Login() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-base-950 border border-base-800 rounded-2xl shadow-2xl p-8 relative overflow-hidden">
+      <div className="w-full max-w-md bg-white dark:bg-base-950 border border-black/10 dark:border-base-800 rounded-2xl shadow-xl dark:shadow-2xl p-8 relative overflow-hidden">
         
         {/* Subtle top gradient accent line */}
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent-500 to-transparent opacity-70" />
 
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Welcome back</h1>
-          <p className="text-base-400 text-sm">Enter your credentials to access your notes</p>
+          <h1 className="text-3xl font-bold text-base-900 dark:text-white tracking-tight mb-2">Welcome back</h1>
+          <p className="text-base-500 dark:text-base-400 text-sm">Enter your credentials to access your notes</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-start gap-3 text-rose-400 text-sm">
+          <div className="mb-6 p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-start gap-3 text-rose-600 dark:text-rose-400 text-sm">
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <p leading-relaxed>{error}</p>
           </div>
@@ -46,25 +46,25 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-base-300 ml-1">Email</label>
+            <label className="text-xs font-medium text-base-500 dark:text-base-300 ml-1">Email</label>
             <div className="relative group">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base-500 group-focus-within:text-accent-500 transition-colors" size={18} />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base-400 dark:text-base-500 group-focus-within:text-accent-500 transition-colors" size={18} />
               <input
                 type="email" required placeholder="you@example.com" value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-base-900/50 border border-base-800 rounded-xl pl-10 pr-4 py-2.5 text-base-100 placeholder-base-600 outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all"
+                className="w-full bg-base-50 dark:bg-base-900/50 border border-black/10 dark:border-base-800 rounded-xl pl-10 pr-4 py-2.5 text-base-900 dark:text-base-100 placeholder-base-400 dark:placeholder-base-600 outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-base-300 ml-1">Password</label>
+            <label className="text-xs font-medium text-base-500 dark:text-base-300 ml-1">Password</label>
             <div className="relative group">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base-500 group-focus-within:text-accent-500 transition-colors" size={18} />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base-400 dark:text-base-500 group-focus-within:text-accent-500 transition-colors" size={18} />
               <input
                 type="password" required placeholder="••••••••" value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-base-900/50 border border-base-800 rounded-xl pl-10 pr-4 py-2.5 text-base-100 placeholder-base-600 outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all"
+                className="w-full bg-base-50 dark:bg-base-900/50 border border-black/10 dark:border-base-800 rounded-xl pl-10 pr-4 py-2.5 text-base-900 dark:text-base-100 placeholder-base-400 dark:placeholder-base-600 outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500 transition-all"
               />
             </div>
           </div>
@@ -79,14 +79,14 @@ export default function Login() {
         </form>
 
         <div className="my-6 flex items-center gap-3">
-          <div className="flex-1 h-px bg-base-800"></div>
-          <span className="text-xs font-medium text-base-500 uppercase tracking-wider">Or continue with</span>
-          <div className="flex-1 h-px bg-base-800"></div>
+          <div className="flex-1 h-px bg-black/10 dark:bg-base-800"></div>
+          <span className="text-xs font-medium text-base-400 dark:text-base-500 uppercase tracking-wider">Or continue with</span>
+          <div className="flex-1 h-px bg-black/10 dark:bg-base-800"></div>
         </div>
 
         <button
           onClick={() => loginWithGoogle().then(() => navigate('/notes'))}
-          className="w-full flex items-center justify-center gap-3 bg-base-900 border border-base-800 hover:bg-base-800 hover:border-base-700 text-base-100 rounded-xl py-2.5 font-medium transition-all active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-3 bg-white dark:bg-base-900 border border-black/10 dark:border-base-800 hover:bg-base-50 dark:hover:bg-base-800 hover:border-black/20 dark:hover:border-base-700 text-base-900 dark:text-base-100 rounded-xl py-2.5 font-medium transition-all active:scale-[0.98] shadow-sm dark:shadow-none"
         >
           {/* standard Google "G" logo SVG */}
           <svg viewBox="0 0 24 24" className="w-5 h-5">

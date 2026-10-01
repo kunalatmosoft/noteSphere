@@ -27,20 +27,20 @@ function CustomSearchBox(props) {
       className="flex gap-2 mb-6"
       onSubmit={(e) => e.preventDefault()}
     >
-      <div className="flex-1 flex items-center bg-base-900 border border-base-800 rounded-lg px-3 focus-within:border-accent-500 transition-colors">
-        <SearchIcon size={16} className="text-base-300" />
+      <div className="flex-1 flex items-center bg-white dark:bg-base-900 border border-black/10 dark:border-base-800 rounded-lg px-3 focus-within:border-accent-500 transition-colors shadow-sm dark:shadow-none">
+        <SearchIcon size={16} className="text-base-400 dark:text-base-300" />
         <input
           type="search"
           value={query}
           onChange={(event) => refine(event.currentTarget.value)}
           placeholder="Search posts, tags, or authors…"
-          className="w-full bg-transparent px-3 py-3 outline-none text-base-100 placeholder-base-500"
+          className="w-full bg-transparent px-3 py-3 outline-none text-base-900 dark:text-base-100 placeholder-base-400 dark:placeholder-base-500"
         />
         {query && (
           <button 
             type="button" 
             onClick={() => refine('')}
-            className="text-base-400 hover:text-base-200"
+            className="text-base-500 dark:text-base-400 hover:text-base-800 dark:hover:text-base-200"
           >
             ×
           </button>
@@ -72,7 +72,7 @@ function Hit({ hit }) {
   return (
     <div 
       onClick={handleCardClick} 
-      className="cursor-pointer block bg-base-900 border border-base-800 rounded-xl overflow-hidden hover:border-accent-500 transition-colors relative h-full flex flex-col"
+      className="cursor-pointer block bg-white dark:bg-base-900 border border-black/10 dark:border-base-800 rounded-xl overflow-hidden hover:border-accent-500 dark:hover:border-accent-500 transition-colors relative h-full flex flex-col shadow-sm dark:shadow-none"
     >
       {hit.cover && <img src={hit.cover} className="w-full h-40 object-cover" alt="Post cover" />}
       
@@ -87,7 +87,7 @@ function Hit({ hit }) {
           </h3>
         </div>
 
-        <p className="text-sm text-base-300 mt-1 line-clamp-2 flex-grow">
+        <p className="text-sm text-base-600 dark:text-base-300 mt-1 line-clamp-2 flex-grow">
           {hit._highlightResult ? (
             <Highlight attribute="content" hit={hit} classNames={{ highlighted: 'ais-Highlight-highlighted' }} />
           ) : (
@@ -103,8 +103,8 @@ function Hit({ hit }) {
           ))}
         </div>
         
-        <div className="flex items-center justify-between mt-3 text-xs text-base-300 pt-3 border-t border-base-800/50">
-          <Link to={`/u/${hit.authorUsername || hit.authorId}`} className="hover:text-accent-500 relative z-10 font-medium">
+        <div className="flex items-center justify-between mt-3 text-xs text-base-600 dark:text-base-300 pt-3 border-t border-black/10 dark:border-base-800/50">
+          <Link to={`/u/${hit.authorUsername || hit.authorId}`} className="hover:text-accent-600 dark:hover:text-accent-500 relative z-10 font-medium text-base-900 dark:text-base-100">
              {hit._highlightResult ? (
                <Highlight attribute="authorName" hit={hit} classNames={{ highlighted: 'ais-Highlight-highlighted' }} />
              ) : (
@@ -114,7 +114,7 @@ function Hit({ hit }) {
           <span>{date}</span>
         </div>
         
-        <div className="flex items-center gap-3 mt-2 text-xs text-base-300">
+        <div className="flex items-center gap-3 mt-2 text-xs text-base-600 dark:text-base-300">
           <span className="flex items-center gap-1"><Heart size={12} /> {hit.likeCount || 0}</span>
           <span className="flex items-center gap-1"><Eye size={12} /> {hit.views || 0}</span>
         </div>
