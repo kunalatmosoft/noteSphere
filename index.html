@@ -40,7 +40,16 @@
     <!-- Third-Party Styles -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" />
   </head>
-  <body class="bg-base-950 text-base-100">
+  <body class="bg-base-50 dark:bg-base-950 text-base-950 dark:text-base-100 transition-colors duration-300">
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('global-theme') || 'dark';
+          document.documentElement.classList.remove('light', 'dark', 'sepia', 'chatgpt');
+          document.documentElement.classList.add(theme);
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

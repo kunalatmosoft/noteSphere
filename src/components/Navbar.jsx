@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
-import { Earth , Search, TrendingUp, Podcast, LogOut, User, Menu, X, Library } from 'lucide-react'
+import { useTheme } from '../context/ThemeContext.jsx'
+import { Earth , Search, TrendingUp, Podcast, LogOut, User, Menu, X, Library, Sun, Moon } from 'lucide-react'
 
 export default function Navbar() {
   const { user, profile, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -51,6 +53,16 @@ export default function Navbar() {
 
           <div className="w-px h-4 bg-black/10 dark:bg-white/20 mx-1 sm:mx-1.5" /> 
 
+          <button 
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
+            className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/20 text-base-600 hover:text-base-950 dark:text-gray-900 dark:hover:text-white transition-all duration-300 active:scale-95" 
+            title="Toggle Theme"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
+          <div className="w-px h-4 bg-black/10 dark:bg-white/20 mx-1 sm:mx-1.5" />
+
           {user ? (
             <>
               <Link to="/notes" className="px-3 py-1 rounded-full bg-accent-100 hover:bg-accent-200 dark:bg-accent-500/30 dark:hover:bg-accent-500/40 border border-accent-200 dark:border-accent-500/40 text-accent-700 dark:text-accent-100 text-xs font-medium transition-all duration-300 hover:shadow-[0_0_15px_rgba(34,197,94,0.1)] dark:hover:shadow-[0_0_15px_rgba(34,197,94,0.3)] active:scale-95">
@@ -87,6 +99,12 @@ export default function Navbar() {
         {/* MOBILE TOGGLE BUTTON (Visible below md)   */}
         {/* ========================================= */}
         <div className="flex md:hidden items-center gap-2">
+          <button 
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
+            className="p-1.5 rounded-full bg-black/5 dark:bg-white/10 text-base-800 dark:text-white hover:bg-black/10 transition-colors"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
           {user && (
             <Link to={`/u/${profile?.username}`} onClick={closeMenu} className="p-0.5 rounded-full border border-black/10 dark:border-white/20 shadow-sm">
               {profile?.photoURL ? (

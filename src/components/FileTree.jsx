@@ -17,25 +17,25 @@ function TreeNode({ node, depth, activeId, onSelect, onCreate, onDelete, collaps
       <div
         className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-md cursor-pointer text-sm transition-all select-none ${
           activeId === node.id 
-            ? 'bg-indigo-500/10 text-indigo-300' 
-            : 'text-base-300 hover:bg-base-800/50 hover:text-base-100'
+            ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300' 
+            : 'text-base-700 dark:text-base-300 hover:bg-black/5 dark:hover:bg-base-800/50 hover:text-base-900 dark:hover:text-base-100'
         }`}
         style={{ paddingLeft: depth * 14 + 8 }}
         onClick={() => (isFolder ? setOpen((o) => !o) : onSelect(node))}
       >
         {isFolder ? (
           <>
-            <span className={`text-base-500 transition-transform ${open ? 'rotate-90' : ''}`}>
+            <span className={`text-base-500 dark:text-base-500 transition-transform ${open ? 'rotate-90' : ''}`}>
               <ChevronRight size={14} />
             </span>
             {open ? (
-              <FolderOpen size={16} className="text-indigo-400 shrink-0" />
+              <FolderOpen size={16} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
             ) : (
-              <Folder size={16} className="text-indigo-400 shrink-0" />
+              <Folder size={16} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
             )}
           </>
         ) : (
-          <FileText size={15} className="text-base-400 shrink-0 ml-5" />
+          <FileText size={15} className="text-base-500 dark:text-base-400 shrink-0 ml-5" />
         )}
         
         <span className={`truncate flex-1 ${activeId === node.id ? 'font-medium' : ''}`}>
@@ -53,14 +53,14 @@ function TreeNode({ node, depth, activeId, onSelect, onCreate, onDelete, collaps
               <button 
                 title="New file" 
                 onClick={(e) => { e.stopPropagation(); onCreate(node.id, 'file') }} 
-                className="p-1 text-base-500 hover:text-indigo-400 transition-colors"
+                className="p-1 text-base-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
               >
                 <Plus size={14} />
               </button>
               <button 
                 title="New folder" 
                 onClick={(e) => { e.stopPropagation(); onCreate(node.id, 'folder') }} 
-                className="p-1 text-base-500 hover:text-indigo-400 transition-colors"
+                className="p-1 text-base-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
               >
                 <FolderPlus size={14} />
               </button>
@@ -69,7 +69,7 @@ function TreeNode({ node, depth, activeId, onSelect, onCreate, onDelete, collaps
           <button 
             title="Delete" 
             onClick={(e) => { e.stopPropagation(); onDelete(node) }} 
-            className="p-1 text-base-500 hover:text-rose-400 transition-colors"
+            className="p-1 text-base-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
           >
             <Trash2 size={13} />
           </button>
@@ -100,7 +100,7 @@ function TreeNode({ node, depth, activeId, onSelect, onCreate, onDelete, collaps
 // FIX: Added tree = [] to prevent undefined .length crashes
 export default function FileTree({ tree = [], activeId, onSelect, onCreate, onDelete, collapseTrigger }) {
   return (
-    <div className="text-base-100 flex flex-col gap-1 pb-4">
+    <div className="text-base-900 dark:text-base-100 flex flex-col gap-1 pb-4">
       {/* Sidebar Header */}
       <div className="flex items-center justify-between px-4 py-2 group mt-2">
         <span className="text-[11px] font-bold text-base-500 uppercase tracking-widest">My Notes</span>
@@ -110,14 +110,14 @@ export default function FileTree({ tree = [], activeId, onSelect, onCreate, onDe
           <button 
             title="New root file" 
             onClick={() => onCreate(null, 'file')} 
-            className="p-1 text-base-400 hover:text-indigo-400 rounded transition-colors"
+            className="p-1 text-base-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded transition-colors"
           >
             <Plus size={16} />
           </button>
           <button 
             title="New root folder" 
             onClick={() => onCreate(null, 'folder')} 
-            className="p-1 text-base-400 hover:text-indigo-400 rounded transition-colors"
+            className="p-1 text-base-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded transition-colors"
           >
             <FolderPlus size={15} />
           </button>

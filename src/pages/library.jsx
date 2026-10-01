@@ -1,37 +1,37 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getFeed, getTrending } from '../lib/posts.js';
-import { 
-    getUserLibraries, 
-    createLibrary, 
-    getLibraryPosts, 
-    updateLibraryName, 
-    deleteLibrary, 
+import {
+    getUserLibraries,
+    createLibrary,
+    getLibraryPosts,
+    updateLibraryName,
+    deleteLibrary,
     removePostFromLibrary,
     toggleLibraryVisibility,
     getPublicLibraries
 } from '../lib/library.js';
 import PostCard from '../components/PostCard.jsx';
 import { Link } from 'react-router-dom';
-import { 
-    TrendingUp, 
-    Library, 
-    Plus, 
-    Globe, 
-    Trash2, 
-    Edit3, 
-    X, 
-    Check, 
-    Search, 
-    Lock, 
-    Users, 
-    LayoutGrid, 
-    List, 
-    Share2, 
-    Sparkles, 
-    ArrowUpRight, 
-    BookOpen, 
-    Layers, 
-    CheckCircle2, 
+import {
+    TrendingUp,
+    Library,
+    Plus,
+    Globe,
+    Trash2,
+    Edit3,
+    X,
+    Check,
+    Search,
+    Lock,
+    Users,
+    LayoutGrid,
+    List,
+    Share2,
+    Sparkles,
+    ArrowUpRight,
+    BookOpen,
+    Layers,
+    CheckCircle2,
     AlertTriangle,
     SlidersHorizontal
 } from 'lucide-react';
@@ -39,8 +39,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 
 // Shimmer Skeleton Loaders
 const SkeletonCard = ({ viewMode }) => (
-    <div className={`bg-[#0d0f17]/60 border border-white/[0.06] rounded-2xl p-4 animate-pulse flex ${viewMode === 'list' ? 'flex-row items-center gap-4 h-24' : 'flex-col justify-between h-[300px]'}`}>
-        <div className={`bg-white/[0.04] rounded-xl ${viewMode === 'list' ? 'w-20 h-16 shrink-0' : 'w-full h-36 mb-3'}`} />
+    <div className={`bg-[#0d0f17]/60 border border-black/10 dark:border-white/[0.06] rounded-2xl p-4 animate-pulse flex ${viewMode === 'list' ? 'flex-row items-center gap-4 h-24' : 'flex-col justify-between h-[300px]'}`}>
+        <div className={`bg-black/5 dark:bg-white/[0.04] rounded-xl ${viewMode === 'list' ? 'w-20 h-16 shrink-0' : 'w-full h-36 mb-3'}`} />
         <div className="flex-1 space-y-2.5 w-full">
             <div className="h-4 bg-white/[0.06] rounded-md w-3/4" />
             <div className="h-3 bg-white/[0.03] rounded-md w-full" />
@@ -65,7 +65,7 @@ export default function CustomizedDashboard() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [copiedToast, setCopiedToast] = useState(false);
-    
+
     // Modal States
     const [createModalOpen, setCreateModalOpen] = useState(false);
     const [newLibName, setNewLibName] = useState('');
@@ -139,7 +139,7 @@ export default function CustomizedDashboard() {
             const newLib = await createLibrary(profile.uid, newLibName.trim(), newLibIsPublic);
             setUserLibraries(prev => [...prev, newLib]);
             if (newLibIsPublic) setPublicLibraries(prev => [...prev, newLib]);
-            
+
             setNewLibName('');
             setNewLibIsPublic(false);
             setCreateModalOpen(false);
@@ -156,10 +156,10 @@ export default function CustomizedDashboard() {
             return;
         }
         await updateLibraryName(activeSection, trimmed);
-        setUserLibraries(prev => prev.map(lib => 
+        setUserLibraries(prev => prev.map(lib =>
             lib.id === activeSection ? { ...lib, name: trimmed } : lib
         ));
-        setPublicLibraries(prev => prev.map(lib => 
+        setPublicLibraries(prev => prev.map(lib =>
             lib.id === activeSection ? { ...lib, name: trimmed } : lib
         ));
         setIsEditing(false);
@@ -187,8 +187,8 @@ export default function CustomizedDashboard() {
     const handleToggleVisibility = async () => {
         if (!activeLibInfo) return;
         const newStatus = !activeLibInfo.isPublic;
-        
-        setUserLibraries(prev => prev.map(lib => 
+
+        setUserLibraries(prev => prev.map(lib =>
             lib.id === activeSection ? { ...lib, isPublic: newStatus } : lib
         ));
 
@@ -197,7 +197,7 @@ export default function CustomizedDashboard() {
         } else {
             setPublicLibraries(prev => prev.filter(lib => lib.id !== activeSection));
         }
-        
+
         await toggleLibraryVisibility(activeSection, newStatus);
     };
 
@@ -225,7 +225,7 @@ export default function CustomizedDashboard() {
     });
 
     return (
-        <div className="min-h-screen bg-[#090a0f] text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+        <div className="min-h-screen bg-transparent font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
             {/* Ambient Background Glows */}
             <div className="fixed top-0 left-1/4 w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl pointer-events-none" />
             <div className="fixed bottom-10 right-10 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl pointer-events-none" />
@@ -236,18 +236,17 @@ export default function CustomizedDashboard() {
                     {/* LEFT SIDEBAR: Navigation & Libraries */}
                     <aside className="space-y-6">
                         {/* Feed Navigation */}
-                        <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
-                            <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider px-3 py-2">
+                        <div className="bg-white/70 dark:bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
+                            <h2 className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-3 py-2">
                                 Feeds
                             </h2>
                             <div className="space-y-1">
                                 <button
                                     onClick={() => setActiveSection('public')}
-                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                                        activeSection === 'public' 
-                                            ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]' 
-                                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
-                                    }`}
+                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${activeSection === 'public'
+                                        ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]'
+                                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-black/5 dark:bg-white/[0.04]'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-2.5">
                                         <Globe size={16} /> Global Explorer
@@ -257,11 +256,10 @@ export default function CustomizedDashboard() {
 
                                 <button
                                     onClick={() => setActiveSection('trending')}
-                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                                        activeSection === 'trending' 
-                                            ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]' 
-                                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
-                                    }`}
+                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${activeSection === 'trending'
+                                        ? 'bg-indigo-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.4)]'
+                                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 hover:bg-black/5 dark:hover:bg-black/5 dark:bg-white/[0.04]'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-2.5">
                                         <TrendingUp size={16} /> Top Ranked
@@ -275,14 +273,14 @@ export default function CustomizedDashboard() {
 
                         {/* User Libraries */}
                         {profile && (
-                            <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
+                            <div className="bg-white/70 dark:bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
                                 <div className="flex items-center justify-between px-3 py-2 mb-1">
-                                    <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <h2 className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
                                         <Layers size={13} className="text-indigo-400" /> My Collections
                                     </h2>
-                                    <button 
+                                    <button
                                         onClick={() => setCreateModalOpen(true)}
-                                        className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-all"
+                                        className="p-1 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-white hover:bg-black/10 dark:hover:bg-white/[0.06] transition-all"
                                         title="Create Library"
                                     >
                                         <Plus size={15} strokeWidth={2.5} />
@@ -291,7 +289,7 @@ export default function CustomizedDashboard() {
 
                                 <div className="space-y-1 max-h-52 overflow-y-auto custom-scrollbar pr-1">
                                     {userLibraries.length === 0 ? (
-                                        <p className="text-[11px] text-zinc-500 px-3 py-2 italic">
+                                        <p className="text-[11px] text-zinc-500 dark:text-zinc-500 px-3 py-2 italic">
                                             No collections yet. Click + to create.
                                         </p>
                                     ) : (
@@ -299,20 +297,19 @@ export default function CustomizedDashboard() {
                                             <button
                                                 key={lib.id}
                                                 onClick={() => setActiveSection(lib.id)}
-                                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                                                    activeSection === lib.id 
-                                                        ? 'bg-white/[0.08] text-indigo-300 font-semibold border border-indigo-500/30' 
-                                                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
-                                                }`}
+                                                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${activeSection === lib.id
+                                                    ? 'bg-white/[0.08] text-indigo-300 font-semibold border border-indigo-500/30'
+                                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 hover:bg-white/[0.03]'
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-2.5 truncate">
-                                                    <BookOpen size={15} className={activeSection === lib.id ? 'text-indigo-400' : 'text-zinc-500'} />
+                                                    <BookOpen size={15} className={activeSection === lib.id ? 'text-indigo-400' : 'text-zinc-500 dark:text-zinc-500'} />
                                                     <span className="truncate">{lib.name}</span>
                                                 </div>
                                                 {lib.isPublic ? (
                                                     <Globe size={12} className="text-emerald-400/80 shrink-0" title="Public collection" />
                                                 ) : (
-                                                    <Lock size={12} className="text-zinc-500 shrink-0" title="Private collection" />
+                                                    <Lock size={12} className="text-zinc-500 dark:text-zinc-500 shrink-0" title="Private collection" />
                                                 )}
                                             </button>
                                         ))
@@ -323,8 +320,8 @@ export default function CustomizedDashboard() {
 
                         {/* Community Curations */}
                         {communityLibraries.length > 0 && (
-                            <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
-                                <h2 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider px-3 py-2 flex items-center gap-1.5">
+                            <div className="bg-white/70 dark:bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-3 shadow-lg shadow-black/20">
+                                <h2 className="text-[11px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider px-3 py-2 flex items-center gap-1.5">
                                     <Users size={13} className="text-emerald-400" /> Community Stacks
                                 </h2>
                                 <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar pr-1">
@@ -332,11 +329,10 @@ export default function CustomizedDashboard() {
                                         <button
                                             key={lib.id}
                                             onClick={() => setActiveSection(lib.id)}
-                                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all truncate ${
-                                                activeSection === lib.id 
-                                                    ? 'bg-white/[0.08] text-indigo-300 font-semibold border border-indigo-500/30' 
-                                                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03]'
-                                            }`}
+                                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all truncate ${activeSection === lib.id
+                                                ? 'bg-white/[0.08] text-indigo-300 font-semibold border border-indigo-500/30'
+                                                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200 hover:bg-white/[0.03]'
+                                                }`}
                                         >
                                             <Library size={15} className="text-emerald-400/70 shrink-0" />
                                             <span className="truncate">{lib.name}</span>
@@ -350,38 +346,38 @@ export default function CustomizedDashboard() {
                     {/* MAIN CONTENT AREA */}
                     <main className="min-w-0">
                         {/* Header Banner */}
-                        <div className="relative mb-6 p-5 sm:p-6 rounded-2xl bg-[#0d0f17]/80 backdrop-blur-xl border border-white/[0.07] shadow-xl shadow-black/20">
+                        <div className="relative mb-6 p-5 sm:p-6 rounded-2xl bg-white/80 dark:bg-[#0d0f17]/80 backdrop-blur-xl border border-zinc-200 dark:border-white/[0.07] shadow-xl shadow-zinc-200/50 dark:shadow-black/20">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                
+
                                 {/* Title & Inline Edit */}
                                 <div className="flex-1 min-w-0">
                                     {isEditing && isOwner ? (
                                         <div className="flex items-center gap-2 max-w-md">
-                                            <input 
+                                            <input
                                                 ref={editInputRef}
-                                                type="text" 
-                                                value={editName} 
+                                                type="text"
+                                                value={editName}
                                                 onChange={(e) => setEditName(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && handleRenameLibrary()}
-                                                className="w-full bg-black/40 border border-indigo-500/80 rounded-xl px-3 py-1.5 text-base font-semibold text-zinc-100 outline-none"
+                                                className="w-full bg-zinc-100 dark:bg-black/40 border border-indigo-500/80 rounded-xl px-3 py-1.5 text-base font-semibold text-zinc-900 dark:text-zinc-100 outline-none"
                                             />
-                                            <button onClick={handleRenameLibrary} className="p-2 text-emerald-400 hover:bg-white/[0.06] rounded-lg transition-colors">
+                                            <button onClick={handleRenameLibrary} className="p-2 text-emerald-500 hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] rounded-lg transition-colors">
                                                 <Check size={16} />
                                             </button>
-                                            <button onClick={() => setIsEditing(false)} className="p-2 text-rose-400 hover:bg-white/[0.06] rounded-lg transition-colors">
+                                            <button onClick={() => setIsEditing(false)} className="p-2 text-rose-500 hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] rounded-lg transition-colors">
                                                 <X size={16} />
                                             </button>
                                         </div>
                                     ) : (
                                         <div className="flex items-center gap-3">
-                                            <h1 className="text-xl font-bold tracking-tight text-zinc-100 truncate flex items-center gap-2">
+                                            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-2">
                                                 {isCustomLibrary ? activeLibInfo?.name : (activeSection === 'public' ? 'Global Feed' : 'Trending Publications')}
                                             </h1>
-                                            
+
                                             {isOwner && (
-                                                <button 
+                                                <button
                                                     onClick={() => { setEditName(activeLibInfo?.name || ''); setIsEditing(true); }}
-                                                    className="p-1 text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.04] rounded-md transition-colors"
+                                                    className="p-1 text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/[0.08] rounded-md transition-colors"
                                                     title="Rename Collection"
                                                 >
                                                     <Edit3 size={15} />
@@ -392,21 +388,20 @@ export default function CustomizedDashboard() {
 
                                     {/* Subtitle & Badges */}
                                     <div className="flex flex-wrap items-center gap-2.5 mt-1.5">
-                                        <span className="text-xs text-zinc-400">
+                                        <span className="text-xs text-zinc-600 dark:text-zinc-400">
                                             {posts.length} {posts.length === 1 ? 'article' : 'articles'} in view
                                         </span>
 
                                         {isCustomLibrary && (
                                             <>
-                                                <span className="text-zinc-600">•</span>
+                                                <span className="text-zinc-400 dark:text-zinc-600">•</span>
                                                 <button
                                                     disabled={!isOwner}
                                                     onClick={handleToggleVisibility}
-                                                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition-all ${
-                                                        activeLibInfo?.isPublic 
-                                                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                                                            : 'bg-zinc-800/60 text-zinc-400 border-zinc-700/60'
-                                                    } ${isOwner ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`}
+                                                    className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition-all ${activeLibInfo?.isPublic
+                                                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                                                            : 'bg-zinc-200/60 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700/60'
+                                                        } ${isOwner ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`}
                                                     title={isOwner ? "Toggle Public / Private" : undefined}
                                                 >
                                                     {activeLibInfo?.isPublic ? <Globe size={11} /> : <Lock size={11} />}
@@ -420,9 +415,9 @@ export default function CustomizedDashboard() {
                                 {/* Controls: Actions & View Switcher */}
                                 <div className="flex items-center gap-2 self-start sm:self-auto">
                                     {isCustomLibrary && (
-                                        <button 
+                                        <button
                                             onClick={handleShareLink}
-                                            className="p-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 border border-white/[0.06] transition-all"
+                                            className="p-2 rounded-xl bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-white/[0.06] transition-all"
                                             title="Share collection link"
                                         >
                                             <Share2 size={15} />
@@ -430,26 +425,32 @@ export default function CustomizedDashboard() {
                                     )}
 
                                     {isOwner && (
-                                        <button 
+                                        <button
                                             onClick={() => setDeleteModalOpen(true)}
-                                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all"
+                                            className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/20 transition-all"
                                             title="Delete Collection"
                                         >
                                             <Trash2 size={15} />
                                         </button>
                                     )}
 
-                                    <div className="flex items-center p-1 bg-black/40 border border-white/[0.06] rounded-xl">
-                                        <button 
+                                    <div className="flex items-center p-1 bg-zinc-100 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.06] rounded-xl">
+                                        <button
                                             onClick={() => setViewMode('grid')}
-                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid'
+                                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                                    : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                                                }`}
                                             title="Grid View"
                                         >
                                             <LayoutGrid size={14} />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => setViewMode('list')}
-                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'list'
+                                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                                    : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                                                }`}
                                             title="List View"
                                         >
                                             <List size={14} />
@@ -462,18 +463,18 @@ export default function CustomizedDashboard() {
                         {/* Search & Filter Bar */}
                         {!loading && posts.length > 0 && (
                             <div className="relative mb-6">
-                                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
                                 <input
                                     type="text"
                                     placeholder="Filter by title, tag, or keywords..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-[#0d0f17]/60 border border-white/[0.08] focus:border-indigo-500/80 focus:ring-2 focus:ring-indigo-500/20 rounded-xl pl-10 pr-9 py-2.5 text-xs text-zinc-100 placeholder:text-zinc-500 outline-none transition-all"
+                                    className="w-full bg-white/80 dark:bg-[#0d0f17]/60 border border-zinc-200 dark:border-white/[0.08] focus:border-indigo-500/80 focus:ring-2 focus:ring-indigo-500/20 rounded-xl pl-10 pr-9 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all shadow-sm dark:shadow-none"
                                 />
                                 {searchQuery && (
-                                    <button 
+                                    <button
                                         onClick={() => setSearchQuery('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200 transition-colors"
                                     >
                                         <X size={14} />
                                     </button>
@@ -489,20 +490,20 @@ export default function CustomizedDashboard() {
                                 ))}
                             </div>
                         ) : posts.length === 0 ? (
-                            <div className="p-12 text-center rounded-2xl bg-[#0d0f17]/40 border border-white/[0.06]">
+                            <div className="p-12 text-center rounded-2xl bg-[#0d0f17]/40 border border-black/10 dark:border-white/[0.06]">
                                 <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
                                     <Sparkles size={22} strokeWidth={1.75} />
                                 </div>
-                                <h3 className="text-sm font-semibold text-zinc-200 mb-1">No articles found</h3>
-                                <p className="text-xs text-zinc-500 max-w-xs mx-auto">
+                                <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mb-1">No articles found</h3>
+                                <p className="text-xs text-zinc-500 dark:text-zinc-500 max-w-xs mx-auto">
                                     {isOwner ? 'Save interesting articles from the global feed into this collection.' : 'There are currently no items available in this section.'}
                                 </p>
                             </div>
                         ) : filteredPosts.length === 0 ? (
-                            <div className="p-10 text-center rounded-2xl bg-[#0d0f17]/40 border border-white/[0.06]">
-                                <p className="text-xs text-zinc-400">No posts match "{searchQuery}"</p>
-                                <button 
-                                    onClick={() => setSearchQuery('')} 
+                            <div className="p-10 text-center rounded-2xl bg-[#0d0f17]/40 border border-black/10 dark:border-white/[0.06]">
+                                <p className="text-xs text-zinc-600 dark:text-zinc-400">No posts match "{searchQuery}"</p>
+                                <button
+                                    onClick={() => setSearchQuery('')}
                                     className="text-xs text-indigo-400 hover:underline mt-2 font-semibold"
                                 >
                                     Reset filter
@@ -511,10 +512,10 @@ export default function CustomizedDashboard() {
                         ) : (
                             <div className={`grid gap-4 ${viewMode === 'grid' ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
                                 {filteredPosts.map(p => (
-                                    <PostCard 
-                                        key={p.id} 
-                                        post={p} 
-                                        userLibraries={userLibraries} 
+                                    <PostCard
+                                        key={p.id}
+                                        post={p}
+                                        userLibraries={userLibraries}
                                         activeLibraryId={isOwner ? activeSection : null}
                                         onRemove={handleRemovePost}
                                     />
@@ -525,9 +526,9 @@ export default function CustomizedDashboard() {
 
                     {/* RIGHT ASIDE: Trending Insights */}
                     <aside className="hidden xl:block space-y-6">
-                        <div className="bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-5 sticky top-6 shadow-lg shadow-black/20">
+                        <div className="bg-white/70 dark:bg-[#0d0f17]/70 backdrop-blur-xl border border-white/[0.07] rounded-2xl p-5 sticky top-6 shadow-lg shadow-black/20">
                             <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/[0.05]">
-                                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
                                     <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
                                         <TrendingUp size={13} strokeWidth={2.5} />
                                     </span>
@@ -538,19 +539,19 @@ export default function CustomizedDashboard() {
                             <ol className="space-y-1">
                                 {trending.slice(0, 5).map((p, i) => (
                                     <li key={p.id}>
-                                        <Link 
-                                            to={`/post/${p.id}`} 
-                                            className="group flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-white/[0.04] transition-all"
+                                        <Link
+                                            to={`/post/${p.id}`}
+                                            className="group flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-black/5 dark:hover:bg-black/5 dark:bg-white/[0.04] transition-all"
                                         >
                                             <div className="flex items-center gap-3 min-w-0 pr-2">
                                                 <span className={`text-xs font-mono font-bold w-4 ${i === 0 ? 'text-amber-400' : 'text-zinc-600'}`}>
                                                     0{i + 1}
                                                 </span>
-                                                <span className="text-xs font-medium text-zinc-300 group-hover:text-indigo-400 transition-colors line-clamp-1">
+                                                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-indigo-400 transition-colors line-clamp-1">
                                                     {p.title}
                                                 </span>
                                             </div>
-                                            <ArrowUpRight size={13} className="text-zinc-600 group-hover:text-zinc-300 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
+                                            <ArrowUpRight size={13} className="text-zinc-600 group-hover:text-zinc-700 dark:text-zinc-300 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 shrink-0" />
                                         </Link>
                                     </li>
                                 ))}
@@ -564,22 +565,22 @@ export default function CustomizedDashboard() {
             {/* CREATE LIBRARY MODAL */}
             {createModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div 
-                        className="w-full max-w-md bg-[#0e111a] border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden"
+                    <div
+                        className="w-full max-w-md bg-[#0e111a] border border-black/10 dark:border-white/[0.08] rounded-2xl shadow-2xl shadow-black/80 overflow-hidden"
                         onKeyDown={(e) => { if (e.key === 'Escape') setCreateModalOpen(false); }}
                     >
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
-                            <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-black/10 dark:border-white/[0.06]">
+                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                                 <Plus size={16} className="text-indigo-400" /> Create Collection
                             </h3>
-                            <button onClick={() => setCreateModalOpen(false)} className="p-1 rounded-md text-zinc-400 hover:text-zinc-100">
+                            <button onClick={() => setCreateModalOpen(false)} className="p-1 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:text-zinc-100">
                                 <X size={16} />
                             </button>
                         </div>
 
                         <form onSubmit={handleCreateLibrary} className="p-5 space-y-4">
                             <div>
-                                <label className="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+                                <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2">
                                     Collection Name
                                 </label>
                                 <input
@@ -588,21 +589,21 @@ export default function CustomizedDashboard() {
                                     value={newLibName}
                                     onChange={(e) => setNewLibName(e.target.value)}
                                     placeholder="e.g. Backend Microservices"
-                                    className="w-full px-3.5 py-2.5 bg-black/40 border border-white/[0.1] focus:border-indigo-500/80 rounded-xl text-xs text-zinc-100 placeholder:text-zinc-600 outline-none"
+                                    className="w-full px-3.5 py-2.5 bg-white/40 dark:bg-black/40 border border-white/[0.1] focus:border-indigo-500/80 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600 outline-none"
                                     required
                                 />
                             </div>
 
-                            <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] cursor-pointer hover:bg-white/[0.04] transition-colors">
-                                <input 
-                                    type="checkbox" 
-                                    checked={newLibIsPublic} 
+                            <label className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-black/10 dark:border-white/[0.06] cursor-pointer hover:bg-black/5 dark:hover:bg-black/5 dark:bg-white/[0.04] transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={newLibIsPublic}
                                     onChange={(e) => setNewLibIsPublic(e.target.checked)}
-                                    className="rounded border-zinc-700 text-indigo-600 focus:ring-0 w-4 h-4 bg-zinc-900"
+                                    className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-0 w-4 h-4 bg-zinc-100 dark:bg-zinc-900"
                                 />
                                 <div>
-                                    <p className="text-xs font-semibold text-zinc-200">Public Collection</p>
-                                    <p className="text-[10px] text-zinc-500">Allow community members to view and discover this collection</p>
+                                    <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Public Collection</p>
+                                    <p className="text-[10px] text-zinc-500 dark:text-zinc-500">Allow community members to view and discover this collection</p>
                                 </div>
                             </label>
 
@@ -610,7 +611,7 @@ export default function CustomizedDashboard() {
                                 <button
                                     type="button"
                                     onClick={() => setCreateModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200"
+                                    className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:text-zinc-200"
                                 >
                                     Cancel
                                 </button>
@@ -630,18 +631,18 @@ export default function CustomizedDashboard() {
             {/* DELETE MODAL */}
             {deleteModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="w-full max-w-sm bg-[#0e111a] border border-white/[0.08] rounded-2xl shadow-2xl p-5 text-center">
+                    <div className="w-full max-w-sm bg-[#0e111a] border border-black/10 dark:border-white/[0.08] rounded-2xl shadow-2xl p-5 text-center">
                         <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 w-fit mx-auto mb-3">
                             <AlertTriangle size={22} strokeWidth={2} />
                         </div>
-                        <h3 className="text-sm font-semibold text-zinc-100 mb-1">Delete Collection?</h3>
-                        <p className="text-xs text-zinc-400 mb-5">
-                            Are you sure you want to remove <span className="font-semibold text-zinc-200">"{activeLibInfo?.name}"</span>? All saved links inside this collection will be cleared.
+                        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">Delete Collection?</h3>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-5">
+                            Are you sure you want to remove <span className="font-semibold text-zinc-800 dark:text-zinc-200">"{activeLibInfo?.name}"</span>? All saved links inside this collection will be cleared.
                         </p>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setDeleteModalOpen(false)}
-                                className="flex-1 py-2 text-xs font-medium text-zinc-300 bg-white/[0.04] hover:bg-white/[0.08] rounded-xl border border-white/[0.06]"
+                                className="flex-1 py-2 text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-black/5 dark:bg-white/[0.04] hover:bg-white/[0.08] rounded-xl border border-black/10 dark:border-white/[0.06]"
                             >
                                 Cancel
                             </button>
@@ -659,7 +660,7 @@ export default function CustomizedDashboard() {
 
             {/* TOAST NOTIFICATION */}
             {copiedToast && (
-                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900 border border-indigo-500/30 text-indigo-300 text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-bottom-2">
+                <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-indigo-500/30 text-indigo-300 text-xs font-semibold shadow-2xl animate-in fade-in slide-in-from-bottom-2">
                     <CheckCircle2 size={14} className="text-indigo-400" />
                     Collection link copied to clipboard!
                 </div>

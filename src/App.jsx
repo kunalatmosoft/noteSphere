@@ -27,7 +27,7 @@ function ProtectedRoute({ children }) {
 export default function App() {
   useAnalytics()
   return (
-    <div className="min-h-screen bg-base-950 text-base-100 font-sans">
+    <div className="min-h-screen bg-base-50 dark:bg-base-950 text-base-950 dark:text-base-100 font-sans transition-colors duration-300">
       <Navbar />
       <Routes>
         {/* Existing Application Routes */}

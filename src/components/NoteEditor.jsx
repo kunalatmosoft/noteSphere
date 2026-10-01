@@ -1,16 +1,32 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { 
   Image as ImageIcon, Globe, EyeOff, Download, FileDown, 
-  Save, X, CheckCircle2, PanelLeft, Settings2 
+  Save, X, CheckCircle2, PanelLeft, Settings2,
+  Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Link as LinkIcon, Code, Quote
 } from 'lucide-react'
 import MarkdownRenderer from './MarkdownRenderer.jsx'
 import { updateNode } from '../lib/notes.js'
 import { publishNote, unpublishPost, updatePublishedPost } from '../lib/posts.js'
 import { downloadMarkdown, downloadPDF } from '../lib/exportUtils.js'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useTheme } from '../context/ThemeContext.jsx'
+import Editor from '@monaco-editor/react'
+
+function ToolbarButton({ icon, onClick, title }) {
+  return (
+    <button 
+      onClick={onClick}
+      title={title}
+      className="p-1.5 rounded text-base-600 dark:text-base-400 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-black/5 dark:hover:bg-white/5 transition-colors shrink-0"
+    >
+      {icon}
+    </button>
+  )
+}
 
 export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
   const { profile } = useAuth()
+  const { theme } = useTheme()
   const [name, setName] = useState(note.name)
   const [content, setContent] = useState(note.content)
   const [tagsInput, setTagsInput] = useState((note.tags || []).join(', '))
@@ -22,9 +38,35 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
   const [isMobile, setIsMobile] = useState(false)
   const [showMeta, setShowMeta] = useState(false) 
   
+  const [editorInstance, setEditorInstance] = useState(null)
   const [editorWidth, setEditorWidth] = useState(50) 
   const [isDragging, setIsDragging] = useState(false)
   const containerRef = useRef(null)
+
+  const handleEditorDidMount = (editor) => {
+    setEditorInstance(editor)
+  }
+
+  const insertText = (prefix, suffix = '') => {
+    if (!editorInstance) return;
+    const selection = editorInstance.getSelection();
+    const model = editorInstance.getModel();
+    const text = model.getValueInRange(selection);
+    
+    editorInstance.executeEdits('toolbar', [{
+      range: selection,
+      text: prefix + text + suffix,
+      forceMoveMarkers: true
+    }]);
+    
+    if (!text) {
+      editorInstance.setPosition({
+        lineNumber: selection.startLineNumber,
+        column: selection.startColumn + prefix.length
+      });
+    }
+    editorInstance.focus();
+  }
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -126,15 +168,15 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
   const availableViews = isMobile ? ['edit', 'preview'] : ['edit', 'split', 'preview']
 
   return (
-    <div className="flex flex-col h-full bg-[#121212] text-base-100 md:rounded-lg overflow-hidden border border-base-900 shadow-2xl font-sans">
+    <div className="flex flex-col h-full bg-white dark:bg-[#121212] text-base-900 dark:text-base-100 md:rounded-lg overflow-hidden border border-black/10 dark:border-base-900 shadow-2xl font-sans">
       
       {/* --- TOP HEADER: Title & Core Actions --- */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-4 py-3 bg-[#181818] border-b border-base-800/80 z-20">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-4 py-3 bg-gray-50 dark:bg-[#181818] border-b border-black/10 dark:border-base-800/80 z-20">
         
         <div className="flex items-center gap-2 flex-1 w-full">
           <button 
             onClick={onToggleSidebar}
-            className="p-1.5 rounded-md text-base-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+            className="p-1.5 rounded-md text-base-600 dark:text-base-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
             title="Toggle Sidebar"
           >
             <PanelLeft size={20} strokeWidth={1.5} />
@@ -142,13 +184,13 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
           
           <input
             value={name} onChange={(e) => setName(e.target.value)}
-            className="flex-1 bg-transparent text-xl font-medium tracking-tight outline-none placeholder-base-600 text-base-100 focus:text-white transition-colors min-w-0"
+            className="flex-1 bg-transparent text-xl font-medium tracking-tight outline-none placeholder-base-600 text-base-900 dark:text-base-100 focus:text-white transition-colors min-w-0"
             placeholder="Untitled note"
           />
 
           <button 
             onClick={() => setShowMeta(!showMeta)}
-            className="sm:hidden p-1.5 rounded-md text-base-400 hover:text-indigo-400 hover:bg-indigo-500/10"
+            className="sm:hidden p-1.5 rounded-md text-base-600 dark:text-base-400 hover:text-indigo-400 hover:bg-indigo-500/10"
           >
             <Settings2 size={18} />
           </button>
@@ -174,17 +216,17 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
             </button>
 
             {/* Export Actions (Colorful Hovers) */}
-            <div className="flex items-center gap-0.5 bg-[#0e0e0e] rounded-md p-0.5 border border-base-800">
+            <div className="flex items-center gap-0.5 bg-white dark:bg-[#0e0e0e] rounded-md p-0.5 border border-black/10 dark:border-base-800">
               <button 
                 onClick={() => downloadMarkdown(name, content)} 
-                className="p-1.5 text-base-400 hover:text-violet-400 hover:bg-violet-500/20 rounded transition-colors active:scale-95" 
+                className="p-1.5 text-base-600 dark:text-base-400 hover:text-violet-400 hover:bg-violet-500/20 rounded transition-colors active:scale-95" 
                 title="Download Markdown"
               >
                 <Download size={16} strokeWidth={1.5} />
               </button>
               <button 
                 onClick={() => downloadPDF('note-preview-content', name)} 
-                className="p-1.5 text-base-400 hover:text-cyan-400 hover:bg-cyan-500/20 rounded transition-colors active:scale-95" 
+                className="p-1.5 text-base-600 dark:text-base-400 hover:text-cyan-400 hover:bg-cyan-500/20 rounded transition-colors active:scale-95" 
                 title="Download PDF"
               >
                 <FileDown size={16} strokeWidth={1.5} />
@@ -193,7 +235,7 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
           </div>
           
           {/* View Toggle */}
-          <div className="flex bg-[#0e0e0e] rounded-md p-0.5 text-xs font-bold border border-base-800">
+          <div className="flex bg-white dark:bg-[#0e0e0e] rounded-md p-0.5 text-xs font-bold border border-black/10 dark:border-base-800">
             {availableViews.map((v) => (
               <button 
                 key={v} 
@@ -201,7 +243,7 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
                 className={`px-3 py-1.5 rounded-[4px] capitalize transition-all ${
                   activeView === v 
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/50' 
-                    : 'text-base-500 hover:text-base-200 hover:bg-base-800/50'
+                    : 'text-base-500 hover:text-base-800 dark:text-base-200 hover:bg-base-800/50'
                 }`}
               >
                 {v}
@@ -235,12 +277,12 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
       </div>
 
       {/* --- SECONDARY HEADER: Metadata --- */}
-      <div className={`${(isMobile && !showMeta) ? 'hidden' : 'flex'} flex-wrap items-center gap-3 px-4 py-2 bg-[#121212] border-b border-base-800/50`}>
-        <div className="flex items-center bg-[#1a1a1a] border border-base-800 rounded-md focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all w-full sm:w-64">
+      <div className={`${(isMobile && !showMeta) ? 'hidden' : 'flex'} flex-wrap items-center gap-3 px-4 py-2 bg-white dark:bg-[#121212] border-b border-black/10 dark:border-base-800/50`}>
+        <div className="flex items-center bg-gray-100 dark:bg-[#1a1a1a] border border-black/10 dark:border-base-800 rounded-md focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all w-full sm:w-64">
           <input
             value={tagsInput} onChange={(e) => setTagsInput(e.target.value)}
             placeholder="Add tags..."
-            className="w-full bg-transparent px-3 py-1.5 text-xs outline-none placeholder-base-600 text-base-200"
+            className="w-full bg-transparent px-3 py-1.5 text-xs outline-none placeholder-base-600 text-base-800 dark:text-base-200"
           />
         </div>
         
@@ -252,14 +294,14 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
           ))}
         </div>
 
-        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer text-base-400 hover:text-pink-400 hover:bg-pink-500/10 transition-colors px-2 py-1.5 rounded-md ml-auto sm:ml-0 active:scale-95">
+        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer text-base-600 dark:text-base-400 hover:text-pink-400 hover:bg-pink-500/10 transition-colors px-2 py-1.5 rounded-md ml-auto sm:ml-0 active:scale-95">
           <ImageIcon size={14} /> 
           <span>Cover</span>
           <input type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
         </label>
         
         {cover && (
-          <div className="flex items-center gap-2 bg-[#1a1a1a] pr-1 rounded-md border border-base-800 overflow-hidden">
+          <div className="flex items-center gap-2 bg-gray-100 dark:bg-[#1a1a1a] pr-1 rounded-md border border-black/10 dark:border-base-800 overflow-hidden">
             <img src={cover} className="w-6 h-6 object-cover" alt="Cover preview" />
             <button 
               onClick={() => setCover('')} 
@@ -272,7 +314,7 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
       </div>
 
       {/* --- MAIN EDITOR / PREVIEW AREA --- */}
-      <div ref={containerRef} className="flex-1 overflow-hidden flex relative bg-[#0e0e0e]">
+      <div ref={containerRef} className="flex-1 overflow-hidden flex relative bg-white dark:bg-[#0e0e0e]">
         
         {(activeView === 'edit' || activeView === 'split') && (
           <div 
@@ -280,14 +322,47 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
               width: activeView === 'split' ? `${editorWidth}%` : '100%',
               pointerEvents: isDragging ? 'none' : 'auto'
             }} 
-            className="h-full flex-shrink-0 flex flex-col"
+            className="h-full flex-shrink-0 flex flex-col pt-1"
           >
-            <textarea
-              value={content} 
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full h-full resize-none bg-transparent outline-none p-6 font-mono text-[14px] leading-[1.6] text-base-200 placeholder-base-700 custom-scrollbar selection:bg-indigo-500/30"
-              placeholder="Start writing..."
-              spellCheck="false"
+            {/* --- FORMATTING TOOLBAR --- */}
+            <div className="flex items-center gap-1 px-4 py-1.5 bg-gray-50/50 dark:bg-[#151515] border-b border-black/5 dark:border-base-800/50 overflow-x-auto hide-scrollbar">
+              <ToolbarButton icon={<Bold size={15}/>} onClick={() => insertText('**', '**')} title="Bold" />
+              <ToolbarButton icon={<Italic size={15}/>} onClick={() => insertText('_', '_')} title="Italic" />
+              <ToolbarButton icon={<Strikethrough size={15}/>} onClick={() => insertText('~~', '~~')} title="Strikethrough" />
+              <div className="w-px h-4 bg-black/10 dark:bg-base-800 mx-1 shrink-0"></div>
+              <ToolbarButton icon={<Heading1 size={15}/>} onClick={() => insertText('# ')} title="Heading 1" />
+              <ToolbarButton icon={<Heading2 size={15}/>} onClick={() => insertText('## ')} title="Heading 2" />
+              <div className="w-px h-4 bg-black/10 dark:bg-base-800 mx-1 shrink-0"></div>
+              <ToolbarButton icon={<List size={15}/>} onClick={() => insertText('- ')} title="Bullet List" />
+              <ToolbarButton icon={<ListOrdered size={15}/>} onClick={() => insertText('1. ')} title="Numbered List" />
+              <ToolbarButton icon={<Quote size={15}/>} onClick={() => insertText('> ')} title="Quote" />
+              <div className="w-px h-4 bg-black/10 dark:bg-base-800 mx-1 shrink-0"></div>
+              <ToolbarButton icon={<LinkIcon size={15}/>} onClick={() => insertText('[', '](url)')} title="Link" />
+              <ToolbarButton icon={<Code size={15}/>} onClick={() => insertText('`', '`')} title="Code" />
+              <ToolbarButton icon={<ImageIcon size={15}/>} onClick={() => insertText('![alt](', ')')} title="Image" />
+            </div>
+
+            <Editor
+              onMount={handleEditorDidMount}
+              height="100%"
+              defaultLanguage="markdown"
+              value={content}
+              onChange={(val) => setContent(val || '')}
+              theme={theme === 'light' ? 'light' : 'vs-dark'}
+              options={{
+                wordWrap: 'on',
+                minimap: { enabled: false },
+                lineNumbers: 'off',
+                folding: false,
+                padding: { top: 24, bottom: 24 },
+                fontSize: 15,
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                scrollBeyondLastLine: false,
+                overviewRulerBorder: false,
+                renderLineHighlight: 'none',
+                hideCursorInOverviewRuler: true
+              }}
+              loading={<div className="text-sm text-base-500 text-center mt-10 animate-pulse">Loading Editor...</div>}
             />
           </div>
         )}
@@ -308,17 +383,17 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
               width: activeView === 'split' ? `${100 - editorWidth}%` : '100%',
               pointerEvents: isDragging ? 'none' : 'auto' 
             }}
-            className={`h-full overflow-y-auto p-8 custom-scrollbar ${activeView === 'split' ? 'bg-[#121212]' : 'bg-[#0e0e0e]'}`}
+            className={`h-full overflow-y-auto p-8 custom-scrollbar ${activeView === 'split' ? 'bg-white dark:bg-[#121212]' : 'bg-white dark:bg-[#0e0e0e]'}`}
           >
             <div className="max-w-3xl mx-auto">
               {cover && (
                 <img 
                  src={cover} 
-                 className="w-full h-32 md:h-64 object-cover rounded-lg mb-8 shadow-sm border border-base-900" 
+                 className="w-full h-32 md:h-64 object-cover rounded-lg mb-8 shadow-sm border border-black/10 dark:border-base-900" 
                  alt="Cover" 
                />
               )}
-              <div id="note-preview-content" className="prose prose-invert prose-sm md:prose-base max-w-none prose-pre:bg-[#1a1a1a] prose-pre:border prose-pre:border-base-800 prose-a:text-indigo-400 hover:prose-a:text-indigo-300">
+              <div id="note-preview-content" className="prose dark:prose-invert prose-sm md:prose-base max-w-none prose-pre:bg-gray-100 dark:bg-[#1a1a1a] prose-pre:border prose-pre:border-black/10 dark:border-base-800 prose-a:text-indigo-400 hover:prose-a:text-indigo-300">
                 <MarkdownRenderer content={content} />
               </div>
             </div>
