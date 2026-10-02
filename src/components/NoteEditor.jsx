@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react'
 import { 
   Image as ImageIcon, Globe, EyeOff, Download, FileDown, 
   Save, X, CheckCircle2, PanelLeft, Settings2,
-  Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Link as LinkIcon, Code, Quote
+  Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Link as LinkIcon, Code, Quote,
+  Maximize, Minimize
 } from 'lucide-react'
 import MarkdownRenderer from './MarkdownRenderer.jsx'
 import { updateNode } from '../lib/notes.js'
@@ -41,7 +42,38 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
   const [editorInstance, setEditorInstance] = useState(null)
   const [editorWidth, setEditorWidth] = useState(50) 
   const [isDragging, setIsDragging] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
+  const editorWrapperRef = useRef(null)
   const containerRef = useRef(null)
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullScreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  const toggleFullScreen = async () => {
+    try {
+      if (!isFullScreen) {
+        if (editorWrapperRef.current?.requestFullscreen) {
+          await editorWrapperRef.current.requestFullscreen().catch(() => setIsFullScreen(true))
+        } else {
+          setIsFullScreen(true)
+        }
+      } else {
+        if (document.exitFullscreen && document.fullscreenElement) {
+          await document.exitFullscreen().catch(() => setIsFullScreen(false))
+        } else {
+          setIsFullScreen(false)
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      setIsFullScreen(!isFullScreen)
+    }
+  }
 
   const handleEditorDidMount = (editor) => {
     setEditorInstance(editor)
@@ -168,7 +200,7 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
   const availableViews = isMobile ? ['edit', 'preview'] : ['edit', 'split', 'preview']
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#121212] text-base-900 dark:text-base-100 md:rounded-lg overflow-hidden border border-black/10 dark:border-base-900 shadow-2xl font-sans">
+    <div ref={editorWrapperRef} className={`flex flex-col h-full bg-white dark:bg-[#1e1e1e] text-base-900 dark:text-base-100 overflow-hidden font-sans ${isFullScreen ? 'w-screen h-screen fixed inset-0 z-[100]' : 'md:rounded-lg border border-black/10 dark:border-base-900 shadow-2xl relative'}`}>
       
       {/* --- TOP HEADER: Title & Core Actions --- */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-4 py-3 bg-gray-50 dark:bg-[#181818] border-b border-black/10 dark:border-base-800/80 z-20">
@@ -249,6 +281,14 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
                 {v}
               </button>
             ))}
+            <div className="w-px h-5 bg-black/10 dark:bg-base-800 mx-1 self-center"></div>
+            <button
+              onClick={toggleFullScreen}
+              className="px-2 py-1.5 rounded-[4px] transition-all text-base-500 hover:text-base-800 dark:text-base-200 hover:bg-base-800/50"
+              title={isFullScreen ? "Exit Fullscreen" : "Fullscreen"}
+            >
+              {isFullScreen ? <Minimize size={14} /> : <Maximize size={14} />}
+            </button>
           </div>
 
           <div className="h-5 w-px bg-base-800 hidden sm:block"></div>
@@ -351,15 +391,18 @@ export default function NoteEditor({ note, onChanged, onToggleSidebar }) {
               theme={theme === 'light' ? 'light' : 'vs-dark'}
               options={{
                 wordWrap: 'on',
-                minimap: { enabled: false },
-                lineNumbers: 'off',
-                folding: false,
-                padding: { top: 24, bottom: 24 },
-                fontSize: 15,
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                scrollBeyondLastLine: false,
+                minimap: { enabled: true, scale: 0.75, renderCharacters: false },
+                lineNumbers: 'on',
+                folding: true,
+                padding: { top: 16, bottom: 16 },
+                fontSize: 14,
+                fontFamily: 'Consolas, "Courier New", monospace',
+                scrollBeyondLastLine: true,
+                renderLineHighlight: 'all',
+                smoothScrolling: true,
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
                 overviewRulerBorder: false,
-                renderLineHighlight: 'none',
                 hideCursorInOverviewRuler: true
               }}
               loading={<div className="text-sm text-base-500 text-center mt-10 animate-pulse">Loading Editor...</div>}

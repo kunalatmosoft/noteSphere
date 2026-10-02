@@ -180,12 +180,12 @@ export default function Dashboard() {
   return (
     <div 
       ref={containerRef}
-      className="w-full h-[calc(100vh-57px)] flex relative bg-white dark:bg-[#090a0f] text-zinc-900 dark:text-zinc-100 overflow-hidden font-sans selection:bg-indigo-500/30 selection:text-indigo-200" 
+      className="w-full h-[calc(100vh-57px)] flex relative bg-white dark:bg-[#1e1e1e] text-zinc-900 dark:text-zinc-100 overflow-hidden font-sans selection:bg-indigo-500/30 selection:text-indigo-200" 
     >
       {/* Sliding Sidebar */}
       <aside 
         style={{ width: isSidebarOpen ? `${sidebarWidth}px` : '0px' }} 
-        className={`flex-shrink-0 h-full bg-white/90 dark:bg-[#0d0f17]/90 backdrop-blur-xl border-r border-black/5 dark:border-white/[0.06] relative overflow-hidden flex flex-col z-10 ${
+        className={`flex-shrink-0 h-full bg-white/90 dark:bg-[#252526] backdrop-blur-xl border-r border-black/5 dark:border-white/[0.06] relative overflow-hidden flex flex-col z-10 ${
           isDragging ? '' : 'transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
         }`}
       >
@@ -271,7 +271,7 @@ export default function Dashboard() {
       )}
 
       {/* Main Workspace Area */}
-      <main className="flex-1 h-full min-w-0 overflow-hidden flex flex-col relative bg-white dark:bg-[#090a0f]">
+      <main className="flex-1 h-full min-w-0 overflow-hidden flex flex-col relative bg-white dark:bg-[#1e1e1e]">
         {!isSidebarOpen && (
           <button 
             onClick={toggleSidebar}
@@ -297,7 +297,7 @@ export default function Dashboard() {
             <div className="relative z-10 flex flex-col items-center max-w-sm text-center">
               <div className="relative mb-6 group">
                 <div className="absolute -inset-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500" />
-                <div className="relative p-4 rounded-2xl bg-white dark:bg-[#111420] border border-white/[0.08] text-indigo-400 shadow-xl">
+                <div className="relative p-4 rounded-2xl bg-white dark:bg-[#252526] border border-white/[0.08] text-indigo-400 shadow-xl">
                   <FileText size={38} strokeWidth={1.5} />
                 </div>
               </div>
@@ -334,7 +334,7 @@ export default function Dashboard() {
       {createModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div 
-            className="w-full max-w-md bg-white dark:bg-[#0e111a] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/80 overflow-hidden"
+            className="w-full max-w-md bg-white dark:bg-[#252526] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/80 overflow-hidden"
             onKeyDown={(e) => { if (e.key === 'Escape') closeCreateModal() }}
           >
             {/* Modal Header */}
@@ -402,7 +402,7 @@ export default function Dashboard() {
       {deleteModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div 
-            className="w-full max-w-sm bg-white dark:bg-[#0e111a] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/80 overflow-hidden"
+            className="w-full max-w-sm bg-white dark:bg-[#252526] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/80 overflow-hidden"
             onKeyDown={(e) => { if (e.key === 'Escape') closeDeleteModal() }}
           >
             <div className="p-5 flex flex-col items-center text-center">
