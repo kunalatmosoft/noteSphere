@@ -31,7 +31,7 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
   return (
     <div 
       onClick={handleCardClick} 
-      className="cursor-pointer block bg-white dark:bg-base-900 border border-black/10 dark:border-base-800 rounded-xl overflow-hidden hover:border-accent-500 dark:hover:border-accent-500 transition-colors relative h-full flex flex-col shadow-sm dark:shadow-none"
+      className="cursor-pointer block bg-white dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 rounded-sm overflow-hidden hover:border-cyan-500 dark:hover:border-cyan-500 transition-colors relative h-full flex flex-col shadow-sm dark:shadow-none"
     >
       {post.cover && <img src={post.cover} className="w-full h-40 object-cover" alt="Post cover" />}
       
@@ -56,14 +56,14 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
               <div className="relative">
                 <button 
                   onClick={toggleDropdown}
-                  className="p-1.5 text-base-400 hover:text-accent-500 rounded-md hover:bg-base-800 transition-colors"
+                  className="p-1.5 text-base-400 hover:text-cyan-500 rounded-md hover:bg-base-800 transition-colors"
                   title="Save to Library"
                 >
                   <Bookmark size={18} />
                 </button>
 
                 {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-base-900 border border-black/10 dark:border-base-700 rounded-lg shadow-xl overflow-hidden py-1 z-20">
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#0a0a0a] border border-black/10 dark:border-white/10 rounded-sm shadow-2xl shadow-black/50 overflow-hidden py-1 z-20">
                     <div className="px-3 py-2 text-xs font-semibold text-base-500 uppercase tracking-wider border-b border-black/10 dark:border-base-800">
                       Save to...
                     </div>
@@ -74,7 +74,7 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
                         className="w-full text-left px-4 py-2 text-sm text-base-700 dark:text-base-300 hover:bg-base-100 dark:hover:bg-base-800 hover:text-base-900 dark:hover:text-white flex items-center justify-between"
                       >
                         <span className="truncate">{lib.name}</span>
-                        {savedTo === lib.id && <Check size={14} className="text-accent-500" />}
+                        {savedTo === lib.id && <Check size={14} className="text-cyan-500" />}
                       </button>
                     ))}
                   </div>
@@ -90,14 +90,14 @@ export default function PostCard({ post, userLibraries = [], activeLibraryId = n
         
         <div className="flex flex-wrap gap-1 mt-2">
           {(post.tags || []).slice(0, 3).map((t) => (
-            <span key={t} className="text-[11px] bg-accent-600/20 text-accent-500 px-2 py-0.5 rounded-full">
+            <span key={t} className="text-[10px] font-bold uppercase tracking-widest bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 px-2 py-0.5 rounded-sm">
               #{t}
             </span>
           ))}
         </div>
         
         <div className="flex items-center justify-between mt-3 text-xs text-base-600 dark:text-base-300 pt-3 border-t border-black/10 dark:border-base-800/50">
-          <Link to={`/u/${post.authorUsername}`} className="hover:text-accent-600 dark:hover:text-accent-500 relative z-10 font-medium text-base-900 dark:text-base-100">
+          <Link to={`/u/${post.authorUsername}`} className="hover:text-cyan-600 dark:hover:text-cyan-500 relative z-10 font-medium text-base-900 dark:text-base-100">
             {post.authorName}
           </Link>
           <span>{date}</span>
